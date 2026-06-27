@@ -22,7 +22,6 @@
   .reset-btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 5px 10px; border-radius: 5px; cursor: pointer; border: 1px solid #283340; background: transparent; color: #8b98a8; transition: all 0.15s; }
   .reset-btn:hover { border-color: #f0556b; color: #f0556b; }
 
-  /* hero + buttons */
   .hero { background: linear-gradient(160deg,#171d26,#12161c); border: 1px solid #2a3340; border-radius: 12px; padding: 18px; position: relative; overflow: hidden; }
   .hero::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:#f2a900; }
   .btn-go { font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; letter-spacing:.03em; padding:10px 15px; border-radius:8px; cursor:pointer; border:1px solid #3fb950; background:rgba(63,185,80,.12); color:#3fb950; transition:all .15s; }
@@ -31,15 +30,27 @@
   .btn-drill:hover { background:rgba(242,169,0,.22); }
   .chip { font-family:'IBM Plex Mono',monospace; font-size:12px; padding:5px 10px; border-radius:20px; border:1px solid #2a3340; background:#12161c; white-space:nowrap; }
 
-  /* today card highlight */
+  /* gamification */
+  .rank-badge { width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:28px; background:radial-gradient(circle at 30% 25%, #2c3543, #14191f); border:1px solid #3a4654; box-shadow:0 0 20px rgba(242,169,0,.18); flex-shrink:0; }
+  .xp-track { height:9px; background:#1c232d; border-radius:99px; overflow:hidden; margin-top:8px; }
+  .xp-fill { height:100%; background:linear-gradient(90deg,#f2a900,#ffcb52); border-radius:99px; transition:width .55s ease; box-shadow:0 0 10px rgba(242,169,0,.45); }
+  .panel-card { background:#161b22; border:1px solid #283340; border-radius:12px; padding:18px; margin-bottom:16px; }
+  .sim-input { width:100%; font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:600; text-align:center; background:#0e1116; border:1px solid #283340; border-radius:8px; color:#e6edf3; padding:10px; }
+  .sim-input:focus { outline:2px solid #f2a900; outline-offset:1px; }
+  .ach-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:10px; }
+  .ach { aspect-ratio:1; border-radius:12px; border:1px solid #283340; background:#12161c; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-align:center; padding:6px; transition:all .2s; }
+  .ach.on { border-color:#3fb950; background:rgba(63,185,80,.08); box-shadow:0 0 14px rgba(63,185,80,.1); }
+  .ach .ico { font-size:23px; filter:grayscale(1) opacity(.35); transition:filter .2s; }
+  .ach.on .ico { filter:none; }
+  .ach .lbl { font-size:8.5px; line-height:1.15; color:#7c8896; font-family:'IBM Plex Mono',monospace; }
+  .ach.on .lbl { color:#c9d4e0; }
+
   .day-today { border-color:#f2a900 !important; box-shadow: 0 0 0 1px #f2a900, 0 0 26px rgba(242,169,0,.13); }
 
-  /* toast + confetti */
   #confetti-canvas { position:fixed; inset:0; pointer-events:none; z-index:55; }
-  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#1c232d; border:1px solid #3a4654; color:#e6edf3; font-family:'IBM Plex Mono',monospace; font-size:13px; padding:12px 20px; border-radius:10px; z-index:60; box-shadow:0 10px 34px rgba(0,0,0,.45); animation:toastIn .25s ease; }
+  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#1c232d; border:1px solid #3a4654; color:#e6edf3; font-family:'IBM Plex Mono',monospace; font-size:13px; padding:12px 20px; border-radius:10px; z-index:60; box-shadow:0 10px 34px rgba(0,0,0,.45); animation:toastIn .25s ease; max-width:90%; text-align:center; }
   @keyframes toastIn { from{opacity:0; transform:translate(-50%,10px)} to{opacity:1; transform:translate(-50%,0)} }
 
-  /* drill */
   .drill-overlay { position:fixed; inset:0; background:rgba(8,10,14,.97); backdrop-filter:blur(6px); z-index:50; overflow-y:auto; padding:22px 16px; animation:toastIn .2s ease; }
   .drill-wrap { max-width:560px; margin:0 auto; }
   .cat-btn { font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:11px 12px; border-radius:8px; cursor:pointer; border:1px solid #283340; background:#161b22; color:#e6edf3; transition:all .15s; text-align:left; display:flex; justify-content:space-between; align-items:center; gap:8px; }
@@ -220,23 +231,23 @@ const SCHEDULE = [
   { day: 36, date: 'Fri Jul 24', week: 6, domain: 'SIM', domainName: 'Full Simulation Exam #1', tasks: [
     'Full Sim Mode — 90Q / 90min, simulate real test conditions',
     'Review full results breakdown by domain',
-    'List your 3 weakest domains from this sim' ] },
+    'Log your Sim #1 score in Mission Readiness above' ] },
   { day: 37, date: 'Sat Jul 25', week: 6, domain: 'DRILL', domainName: 'Weak-Area Drilling', tasks: [
     'By-Domain Drill mode — hammer weakest domain from Sim #1',
     'Rewatch any Messer videos for weak topics',
     'PBQ-specific practice — full performance-based question set' ] },
   { day: 38, date: 'Sun Jul 26', week: 6, domain: 'SIM', domainName: 'Full Simulation Exam #2', tasks: [
     'Full Sim Mode — 90Q / 90min, target 85%+',
-    'Review full results breakdown by domain',
-    'Compare to Sim #1 — track improvement' ] },
+    'Log your Sim #2 score — compare to Sim #1',
+    'Review full results breakdown by domain' ] },
   { day: 39, date: 'Mon Jul 27', week: 6, domain: 'DRILL', domainName: 'Weak-Area Drilling', tasks: [
     'By-Domain Drill mode — second weakest domain',
     'Final acronym & port number flashcard review',
     'Light AD lab review — confidence builder, not new material' ] },
   { day: 40, date: 'Tue Jul 28', week: 6, domain: 'SIM', domainName: 'Full Simulation Exam #3', tasks: [
     'Full Sim Mode — 90Q / 90min, target 85%+ across all domains',
-    'Review full results breakdown',
-    'This should feel comfortable now — if not, flag for tomorrow' ] },
+    'Log your Sim #3 score — this should read GO',
+    'Review full results breakdown' ] },
   { day: 41, date: 'Wed Jul 29', week: 6, domain: 'TAPER', domainName: 'Taper Day', tasks: [
     'Light review only — flashcards, recall notes skim',
     'NO new material, no full sim today',
@@ -256,9 +267,37 @@ const DOMAIN_COLORS = {
 };
 
 const STORAGE_KEY = 'secplus42_progress';
+const META_KEY = 'secplus42_meta';
 const CARDS = [{"c": "Acronyms", "f": "AAA", "b": "Authentication, Authorization, and Accounting"}, {"c": "Acronyms", "f": "CIA (triad)", "b": "Confidentiality, Integrity, Availability"}, {"c": "Acronyms", "f": "MFA", "b": "Multi-Factor Authentication"}, {"c": "Acronyms", "f": "SSO", "b": "Single Sign-On"}, {"c": "Acronyms", "f": "PKI", "b": "Public Key Infrastructure"}, {"c": "Acronyms", "f": "CA", "b": "Certificate Authority"}, {"c": "Acronyms", "f": "CRL", "b": "Certificate Revocation List"}, {"c": "Acronyms", "f": "OCSP", "b": "Online Certificate Status Protocol"}, {"c": "Acronyms", "f": "SIEM", "b": "Security Information and Event Management"}, {"c": "Acronyms", "f": "SOAR", "b": "Security Orchestration, Automation, and Response"}, {"c": "Acronyms", "f": "EDR", "b": "Endpoint Detection and Response"}, {"c": "Acronyms", "f": "XDR", "b": "Extended Detection and Response"}, {"c": "Acronyms", "f": "DLP", "b": "Data Loss Prevention"}, {"c": "Acronyms", "f": "IAM", "b": "Identity and Access Management"}, {"c": "Acronyms", "f": "PAM", "b": "Privileged Access Management"}, {"c": "Acronyms", "f": "NAC", "b": "Network Access Control"}, {"c": "Acronyms", "f": "IDS", "b": "Intrusion Detection System"}, {"c": "Acronyms", "f": "IPS", "b": "Intrusion Prevention System"}, {"c": "Acronyms", "f": "DDoS", "b": "Distributed Denial of Service"}, {"c": "Acronyms", "f": "APT", "b": "Advanced Persistent Threat"}, {"c": "Acronyms", "f": "IoC", "b": "Indicator of Compromise"}, {"c": "Acronyms", "f": "CASB", "b": "Cloud Access Security Broker"}, {"c": "Acronyms", "f": "SASE", "b": "Secure Access Service Edge"}, {"c": "Acronyms", "f": "WAF", "b": "Web Application Firewall"}, {"c": "Acronyms", "f": "HSM", "b": "Hardware Security Module"}, {"c": "Acronyms", "f": "TPM", "b": "Trusted Platform Module"}, {"c": "Acronyms", "f": "MDM", "b": "Mobile Device Management"}, {"c": "Acronyms", "f": "RBAC", "b": "Role-Based Access Control"}, {"c": "Acronyms", "f": "ABAC", "b": "Attribute-Based Access Control"}, {"c": "Acronyms", "f": "MAC (access)", "b": "Mandatory Access Control"}, {"c": "Acronyms", "f": "DAC", "b": "Discretionary Access Control"}, {"c": "Acronyms", "f": "ALE", "b": "Annualized Loss Expectancy"}, {"c": "Acronyms", "f": "ARO", "b": "Annualized Rate of Occurrence"}, {"c": "Acronyms", "f": "SLE", "b": "Single Loss Expectancy"}, {"c": "Acronyms", "f": "RPO", "b": "Recovery Point Objective"}, {"c": "Acronyms", "f": "RTO", "b": "Recovery Time Objective"}, {"c": "Acronyms", "f": "MTTR", "b": "Mean Time To Repair"}, {"c": "Acronyms", "f": "MTBF", "b": "Mean Time Between Failures"}, {"c": "Acronyms", "f": "BIA", "b": "Business Impact Analysis"}, {"c": "Acronyms", "f": "SLA", "b": "Service Level Agreement"}, {"c": "Acronyms", "f": "MOU", "b": "Memorandum of Understanding"}, {"c": "Acronyms", "f": "BPA", "b": "Business Partners Agreement"}, {"c": "Acronyms", "f": "NDA", "b": "Non-Disclosure Agreement"}, {"c": "Acronyms", "f": "SOW", "b": "Statement of Work"}, {"c": "Acronyms", "f": "TLS", "b": "Transport Layer Security"}, {"c": "Acronyms", "f": "IPSec", "b": "Internet Protocol Security"}, {"c": "Acronyms", "f": "VPN", "b": "Virtual Private Network"}, {"c": "Acronyms", "f": "OWASP", "b": "Open Worldwide Application Security Project"}, {"c": "Acronyms", "f": "XSS", "b": "Cross-Site Scripting"}, {"c": "Acronyms", "f": "CSRF", "b": "Cross-Site Request Forgery"}, {"c": "Acronyms", "f": "FIM", "b": "File Integrity Monitoring"}, {"c": "Acronyms", "f": "UEBA", "b": "User and Entity Behavior Analytics"}, {"c": "Acronyms", "f": "SOC", "b": "Security Operations Center"}, {"c": "Acronyms", "f": "CVE", "b": "Common Vulnerabilities and Exposures"}, {"c": "Acronyms", "f": "CVSS", "b": "Common Vulnerability Scoring System"}, {"c": "Acronyms", "f": "SAML", "b": "Security Assertion Markup Language"}, {"c": "Acronyms", "f": "OIDC", "b": "OpenID Connect"}, {"c": "Ports", "f": "FTP", "b": "20 / 21"}, {"c": "Ports", "f": "SSH / SFTP / SCP", "b": "22"}, {"c": "Ports", "f": "Telnet (insecure)", "b": "23"}, {"c": "Ports", "f": "SMTP", "b": "25"}, {"c": "Ports", "f": "DNS", "b": "53"}, {"c": "Ports", "f": "DHCP", "b": "67 / 68"}, {"c": "Ports", "f": "HTTP", "b": "80"}, {"c": "Ports", "f": "Kerberos", "b": "88"}, {"c": "Ports", "f": "POP3", "b": "110"}, {"c": "Ports", "f": "IMAP", "b": "143"}, {"c": "Ports", "f": "SNMP", "b": "161 / 162"}, {"c": "Ports", "f": "LDAP", "b": "389"}, {"c": "Ports", "f": "HTTPS", "b": "443"}, {"c": "Ports", "f": "SMB", "b": "445"}, {"c": "Ports", "f": "Syslog", "b": "514"}, {"c": "Ports", "f": "LDAPS (secure)", "b": "636"}, {"c": "Ports", "f": "SQL Server", "b": "1433"}, {"c": "Ports", "f": "RDP", "b": "3389"}, {"c": "Crypto", "f": "AES key sizes", "b": "128, 192, or 256 bits"}, {"c": "Crypto", "f": "To encrypt a message FOR someone, use their...", "b": "Public key"}, {"c": "Crypto", "f": "To sign so they know it's from YOU, use your...", "b": "Private key"}, {"c": "Crypto", "f": "Purpose of hashing", "b": "Integrity — one-way, fixed-length fingerprint"}, {"c": "Crypto", "f": "Broken/deprecated hashes", "b": "MD5 and SHA-1"}, {"c": "Crypto", "f": "Strong, current hash", "b": "SHA-256 (SHA-2 family)"}, {"c": "Crypto", "f": "HMAC provides...", "b": "Integrity + authentication (hash + secret key)"}, {"c": "Crypto", "f": "Key stretching algorithms", "b": "bcrypt, PBKDF2, Argon2"}, {"c": "Crypto", "f": "Diffie-Hellman is used for...", "b": "Key exchange (not encryption)"}, {"c": "Crypto", "f": "RSA", "b": "Asymmetric — encryption and digital signatures"}, {"c": "Crypto", "f": "ECC", "b": "Asymmetric — small keys, efficient (mobile/IoT)"}, {"c": "Crypto", "f": "DES / 3DES", "b": "Legacy, weak symmetric ciphers"}, {"c": "Crypto", "f": "Purpose of a salt", "b": "Make each hash unique — defeats rainbow tables"}, {"c": "Crypto", "f": "Perfect Forward Secrecy", "b": "Session keys stay safe even if long-term key is later compromised"}, {"c": "Crypto", "f": "GCM mode provides...", "b": "Encryption + authentication (AEAD)"}, {"c": "Crypto", "f": "Symmetric encryption: speed & use", "b": "Fast — bulk data confidentiality (one shared key)"}, {"c": "Crypto", "f": "Asymmetric encryption: speed & use", "b": "Slow — key exchange, signatures, non-repudiation (key pair)"}, {"c": "Crypto", "f": "Digital signature = ", "b": "Hash of message encrypted with sender's private key"}, {"c": "Controls", "f": "4 security control categories", "b": "Technical, Managerial, Operational, Physical"}, {"c": "Controls", "f": "6 security control types", "b": "Preventive, Deterrent, Detective, Corrective, Compensating, Directive"}, {"c": "Controls", "f": "Preventive control example", "b": "Firewall, MFA, access lists"}, {"c": "Controls", "f": "Detective control example", "b": "IDS, logs, CCTV review"}, {"c": "Controls", "f": "Deterrent control example", "b": "Warning signs, lighting, guard presence"}, {"c": "Controls", "f": "Corrective control example", "b": "Backups/restore, patching after an incident"}, {"c": "Controls", "f": "Compensating control", "b": "Alternative control when the primary isn't feasible"}, {"c": "Controls", "f": "Directive control example", "b": "Policy, procedure, acceptable use agreement"}, {"c": "Threat Actors", "f": "Nation-state actor", "b": "Highest resources & sophistication; often APTs"}, {"c": "Threat Actors", "f": "Hacktivist", "b": "Motivated by ideology / a cause"}, {"c": "Threat Actors", "f": "Insider threat", "b": "Authorized person misusing access from within"}, {"c": "Threat Actors", "f": "Script kiddie", "b": "Low skill; uses existing tools/exploits"}, {"c": "Threat Actors", "f": "Organized crime", "b": "Financially motivated, well-funded"}, {"c": "Threat Actors", "f": "Shadow IT", "b": "Unauthorized systems/services used by employees"}, {"c": "Social Engineering", "f": "Phishing", "b": "Fraudulent email, broad/untargeted"}, {"c": "Social Engineering", "f": "Spear phishing", "b": "Phishing targeted at a specific person/group"}, {"c": "Social Engineering", "f": "Whaling", "b": "Phishing that targets executives / high-value"}, {"c": "Social Engineering", "f": "Vishing", "b": "Voice / phone-based social engineering"}, {"c": "Social Engineering", "f": "Smishing", "b": "SMS / text-based social engineering"}, {"c": "Social Engineering", "f": "Pretexting", "b": "Inventing a scenario to gain trust/info"}, {"c": "Social Engineering", "f": "BEC", "b": "Business Email Compromise"}, {"c": "Social Engineering", "f": "Tailgating / piggybacking", "b": "Following someone into a secure area"}, {"c": "Social Engineering", "f": "Watering hole attack", "b": "Compromising a site the target group frequents"}, {"c": "Malware", "f": "Virus", "b": "Needs a host file + user action to spread"}, {"c": "Malware", "f": "Worm", "b": "Self-replicating; spreads on its own (no host)"}, {"c": "Malware", "f": "Trojan", "b": "Disguised as legitimate software"}, {"c": "Malware", "f": "Ransomware", "b": "Encrypts data, demands payment"}, {"c": "Malware", "f": "RAT", "b": "Remote Access Trojan — backdoor control"}, {"c": "Malware", "f": "Rootkit", "b": "Hides deep (often kernel-level), maintains access"}, {"c": "Malware", "f": "Keylogger", "b": "Records keystrokes"}, {"c": "Malware", "f": "Logic bomb", "b": "Triggers on a condition/date"}, {"c": "Malware", "f": "Spyware", "b": "Covertly collects information"}, {"c": "Malware", "f": "Fileless malware", "b": "Runs in memory; little/no disk footprint"}, {"c": "Attacks", "f": "SQL injection", "b": "Malicious input manipulates a database query"}, {"c": "Attacks", "f": "Cross-Site Scripting (XSS)", "b": "Injects scripts that run in victims' browsers"}, {"c": "Attacks", "f": "CSRF", "b": "Forces an authenticated user to perform an action"}, {"c": "Attacks", "f": "Buffer overflow", "b": "Writes beyond allocated memory"}, {"c": "Attacks", "f": "Replay attack", "b": "Captured valid data is re-sent"}, {"c": "Attacks", "f": "On-path / MitM", "b": "Attacker intercepts traffic between two parties"}, {"c": "Attacks", "f": "Privilege escalation", "b": "Gaining higher access than granted"}, {"c": "Attacks", "f": "DNS poisoning", "b": "Corrupting DNS cache to redirect traffic"}, {"c": "Attacks", "f": "Zero-day", "b": "Exploit for an unknown/unpatched vulnerability"}, {"c": "Attacks", "f": "Directory traversal", "b": "Accessing files outside the web root (../)"}, {"c": "IAM", "f": "The MFA factor categories", "b": "Know, Have, Are, Somewhere you are, Something you do"}, {"c": "IAM", "f": "SAML", "b": "XML-based SSO/federation (enterprise web SSO)"}, {"c": "IAM", "f": "OAuth", "b": "Authorization framework (delegated access)"}, {"c": "IAM", "f": "OIDC", "b": "Authentication layer built on top of OAuth 2.0"}, {"c": "IAM", "f": "Federation", "b": "Trusting identities across different domains/orgs"}, {"c": "IAM", "f": "Principle of least privilege", "b": "Give only the access required to do the job"}, {"c": "IAM", "f": "RBAC", "b": "Access granted by role / job function"}, {"c": "IAM", "f": "ABAC", "b": "Access granted by attributes & policies"}, {"c": "IAM", "f": "MAC (Mandatory Access Control)", "b": "System-enforced via labels/clearance (most rigid)"}, {"c": "IAM", "f": "Just-in-time (JIT) access", "b": "Privileges granted only when needed, then revoked"}, {"c": "Risk", "f": "SLE formula", "b": "Asset Value × Exposure Factor"}, {"c": "Risk", "f": "ALE formula", "b": "SLE × ARO"}, {"c": "Risk", "f": "4 risk treatment options", "b": "Accept, Avoid, Transfer, Mitigate"}, {"c": "Risk", "f": "Risk transfer example", "b": "Buying insurance"}, {"c": "Risk", "f": "Risk appetite", "b": "Amount of risk an org is willing to accept"}, {"c": "Risk", "f": "Qualitative risk analysis", "b": "Subjective ratings (high / medium / low)"}, {"c": "Risk", "f": "Quantitative risk analysis", "b": "Numeric, dollar-based ($)"}, {"c": "Risk", "f": "Residual risk", "b": "Risk remaining after controls are applied"}, {"c": "Risk", "f": "Inherent risk", "b": "Risk present before any controls"}, {"c": "Incident Response", "f": "The 6 IR phases (in order)", "b": "Preparation → Detection → Containment → Eradication → Recovery → Lessons Learned"}, {"c": "Incident Response", "f": "Order of volatility", "b": "Collect most volatile first: CPU/RAM → disk → logs → archives"}, {"c": "Incident Response", "f": "Chain of custody", "b": "Documentation proving how evidence was handled"}, {"c": "Incident Response", "f": "Containment goal", "b": "Limit the spread/damage of an incident"}, {"c": "Incident Response", "f": "Eradication goal", "b": "Remove the threat from the environment"}, {"c": "Incident Response", "f": "Lessons learned goal", "b": "Improve detection/response for next time"}, {"c": "Resilience", "f": "RPO", "b": "Max acceptable DATA loss, measured in time"}, {"c": "Resilience", "f": "RTO", "b": "Max acceptable DOWNTIME to restore service"}, {"c": "Resilience", "f": "RAID 0", "b": "Striping — speed, NO redundancy"}, {"c": "Resilience", "f": "RAID 1", "b": "Mirroring — full duplicate"}, {"c": "Resilience", "f": "RAID 5", "b": "Striping with parity (survives 1 disk loss)"}, {"c": "Resilience", "f": "Hot site", "b": "Fully equipped, near-instant failover"}, {"c": "Resilience", "f": "Cold site", "b": "Space/power only — longest to bring online"}, {"c": "Resilience", "f": "Warm site", "b": "Partially equipped — middle ground"}, {"c": "Resilience", "f": "Zero Trust core idea", "b": "Never trust, always verify (control plane vs data plane)"}, {"c": "Monitoring", "f": "SIEM", "b": "Aggregates + correlates logs for detection/alerting"}, {"c": "Monitoring", "f": "SOAR", "b": "Automates response via playbooks"}, {"c": "Monitoring", "f": "NetFlow", "b": "Network traffic metadata (who talked to whom)"}, {"c": "Monitoring", "f": "SNMP", "b": "Monitors/manages network devices"}, {"c": "Monitoring", "f": "Syslog", "b": "Standardized device logging protocol"}];
 
-/* ---------- helpers ---------- */
+const TASK_XP = 10, DAY_XP = 50, WEEK_XP = 150, SIM_XP = 100, DRILL_XP = 15;
+const RANKS = [
+  { name:'Recruit',            xp:0,    icon:'🪖' },
+  { name:'Script Kiddie',      xp:150,  icon:'💾' },
+  { name:'Help Desk Tech',     xp:350,  icon:'🎧' },
+  { name:'Jr. Analyst',        xp:600,  icon:'🔍' },
+  { name:'SOC Analyst',        xp:950,  icon:'🖥️' },
+  { name:'Threat Hunter',      xp:1400, icon:'🎯' },
+  { name:'Security Specialist',xp:1950, icon:'🛡️' },
+  { name:'Incident Responder', xp:2600, icon:'🚨' },
+  { name:'Security Engineer',  xp:3350, icon:'⚙️' },
+  { name:'Security Architect', xp:4200, icon:'🏛️' },
+  { name:'Certified Pro',      xp:5100, icon:'🏆' },
+];
+const ACHIEVEMENTS = [
+  { id:'first',    icon:'🩸', name:'First Blood',  desc:'Complete your first task' },
+  { id:'day1',     icon:'✅', name:'Day One',      desc:'Complete a full day' },
+  { id:'streak3',  icon:'🔥', name:'On Fire',      desc:'Hit a 3-day streak' },
+  { id:'drill',    icon:'⚡', name:'Drill Sgt',    desc:'Finish a Quick Drill round' },
+  { id:'perfect',  icon:'🎯', name:'Sharpshooter', desc:'Score 100% on a drill round' },
+  { id:'week',     icon:'📅', name:'Week Warrior', desc:'Complete a full week' },
+  { id:'half',     icon:'🧠', name:'Halfway',      desc:'Reach 50% overall progress' },
+  { id:'sim',      icon:'📊', name:'Sim Logged',   desc:'Record a simulation score' },
+  { id:'ready',    icon:'🚀', name:'Battle Ready', desc:'Readiness hits GO (80%+)' },
+  { id:'soc',      icon:'⭐', name:'Made Analyst', desc:'Reach SOC Analyst rank' },
+  { id:'complete', icon:'👑', name:'Campaign Won', desc:'Complete 100% of tasks' },
+];
+
 function todayDayNumber() {
   const now = new Date();
   const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -275,7 +314,7 @@ function fireConfetti(big) {
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth; canvas.height = window.innerHeight;
   const colors = ['#3fb950','#f2a900','#4f9dff','#b083f0','#f0556b','#ff8c42'];
-  const count = big ? 170 : 90;
+  const count = big ? 180 : 90;
   const parts = [];
   for (let i=0;i<count;i++){
     parts.push({ x: canvas.width/2 + (Math.random()-0.5)*220, y: canvas.height/3,
@@ -296,8 +335,33 @@ function fireConfetti(big) {
   })();
 }
 
-/* ---------- Quick Drill ---------- */
-function Drill({ onClose }) {
+/* readiness gauge */
+function ReadinessGauge({ value }) {
+  const cx=100, cy=104, r=80, sw=14;
+  const polar=(deg)=>{ const a=deg*Math.PI/180; return [cx+r*Math.cos(a), cy-r*Math.sin(a)]; };
+  const arc=(s,e)=>{ const [sx,sy]=polar(s); const [ex,ey]=polar(e); const large=Math.abs(s-e)>180?1:0; return `M ${sx} ${sy} A ${r} ${r} 0 ${large} 1 ${ex} ${ey}`; };
+  const has = value!=null && !isNaN(value);
+  const v = has ? Math.max(0,Math.min(100,value)) : 0;
+  const ndeg = 180 - v*1.8;
+  const na = ndeg*Math.PI/180;
+  const nx = cx+(r-20)*Math.cos(na), ny = cy-(r-20)*Math.sin(na);
+  const zone = !has ? null : v>=80?'GO' : v>=70?'CAUTION' : 'NOT READY';
+  const zc = zone==='GO'?'#3fb950' : zone==='CAUTION'?'#f2a900' : zone?'#f0556b':'#56616e';
+  return (
+    <svg viewBox="0 0 200 120" style={{ width:'100%', maxWidth:300, display:'block', margin:'0 auto' }}>
+      <path d={arc(180,54)} stroke="#f0556b" strokeWidth={sw} fill="none" opacity="0.32" strokeLinecap="round"/>
+      <path d={arc(54,36)}  stroke="#f2a900" strokeWidth={sw} fill="none" opacity="0.32"/>
+      <path d={arc(36,0)}   stroke="#3fb950" strokeWidth={sw} fill="none" opacity="0.32" strokeLinecap="round"/>
+      {has && <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={zc} strokeWidth="3" strokeLinecap="round"/>}
+      {has && <circle cx={cx} cy={cy} r="5" fill={zc}/>}
+      <text x={cx} y={cy-24} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="30" fontWeight="700" fill={zc}>{has? v+'%' : '—'}</text>
+      <text x={cx} y={cy-6} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="10" letterSpacing="1.5" fill={zc}>{zone || 'NO DATA'}</text>
+    </svg>
+  );
+}
+
+/* Quick Drill */
+function Drill({ onClose, onComplete }) {
   const cats = useMemo(()=>{ const c=[]; CARDS.forEach(x=>{ if(!c.includes(x.c)) c.push(x.c); }); return c; },[]);
   const counts = useMemo(()=>{ const m={}; CARDS.forEach(x=>{ m[x.c]=(m[x.c]||0)+1; }); return m; },[]);
   const [mode,setMode]=useState('menu');
@@ -315,9 +379,11 @@ function Drill({ onClose }) {
     setDeck(pool); setI(0); setFlipped(false); setGot(0); setMissed([]); setMode('play');
   };
   const grade=(knew)=>{
-    const card=deck[i];
-    if(knew) setGot(g=>g+1); else setMissed(m=>[...m,card]);
-    if(i+1>=deck.length) setMode('summary');
+    const isLast = i+1>=deck.length;
+    const newGot = got + (knew?1:0);
+    const newMissed = knew ? missed : [...missed, deck[i]];
+    setGot(newGot); setMissed(newMissed);
+    if(isLast){ const pct=Math.round(newGot/deck.length*100); if(onComplete) onComplete(pct); setMode('summary'); }
     else { setI(i+1); setFlipped(false); }
   };
   const drillMissed=()=>{ const pool=shuffle(missed); setDeck(pool); setI(0); setFlipped(false); setGot(0); setMissed([]); setMode('play'); };
@@ -333,7 +399,7 @@ function Drill({ onClose }) {
         {mode==='menu' && (
           <div>
             <p className="mono" style={{color:'#8b98a8',fontSize:12.5,marginBottom:16,lineHeight:1.6}}>
-              {CARDS.length} cards. Pick a stack, flip, grade yourself. 2-minute rounds.
+              {CARDS.length} cards. Pick a stack, flip, grade yourself. 2-minute rounds. (+{DRILL_XP} XP each)
             </p>
             <div style={{display:'flex',gap:10,marginBottom:14}}>
               <button className="btn-drill" style={{flex:1}} onClick={()=>start('random')}>🎲 Random 15</button>
@@ -380,7 +446,7 @@ function Drill({ onClose }) {
           const color = pct>=80?'#3fb950':pct>=60?'#f2a900':'#f0556b';
           return (
             <div style={{textAlign:'center',paddingTop:10}}>
-              <div className="mono" style={{fontSize:12,color:'#8b98a8',letterSpacing:'.1em',textTransform:'uppercase'}}>Round complete</div>
+              <div className="mono" style={{fontSize:12,color:'#8b98a8',letterSpacing:'.1em',textTransform:'uppercase'}}>Round complete · +{DRILL_XP} XP</div>
               <div style={{fontSize:52,fontWeight:700,color,margin:'8px 0',fontFamily:"'IBM Plex Mono',monospace"}}>{pct}%</div>
               <div className="mono" style={{color:'#8b98a8',fontSize:14,marginBottom:22}}>{got} of {total} cards</div>
               <div style={{display:'flex',flexDirection:'column',gap:10,maxWidth:320,margin:'0 auto'}}>
@@ -396,11 +462,14 @@ function Drill({ onClose }) {
   );
 }
 
-/* ---------- main ---------- */
+/* main */
 function StudyTracker() {
   const [completed, setCompleted] = useState(() => {
-    try { const s = window.localStorage.getItem(STORAGE_KEY); return s ? JSON.parse(s) : {}; }
-    catch (e) { return {}; }
+    try { const s = window.localStorage.getItem(STORAGE_KEY); return s ? JSON.parse(s) : {}; } catch (e) { return {}; }
+  });
+  const [meta, setMeta] = useState(() => {
+    const base = { sims:[null,null,null], drills:0, bestDrill:0, seen:[], lastRank:0 };
+    try { const s = JSON.parse(window.localStorage.getItem(META_KEY)); return s ? { ...base, ...s } : base; } catch (e) { return base; }
   });
   const todayNum = useMemo(todayDayNumber, []);
   const todayEntry = useMemo(()=>SCHEDULE.find(d=>d.day===todayNum), [todayNum]);
@@ -409,12 +478,72 @@ function StudyTracker() {
   const [toast, setToast] = useState(null);
   const [drillOpen, setDrillOpen] = useState(false);
   const todayRef = useRef(null);
+  const firstRun = useRef(true);
 
+  useEffect(() => { try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(completed)); } catch (e) {} }, [completed]);
+  useEffect(() => { try { window.localStorage.setItem(META_KEY, JSON.stringify(meta)); } catch (e) {} }, [meta]);
+
+  const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null), 2400); };
+
+  /* derived progress */
+  const dayComplete = (dn) => { const o=SCHEDULE.find(d=>d.day===dn); return o && o.tasks.length>0 && o.tasks.every((_,i)=>completed[`${dn}-${i}`]); };
+  const completedDaysCount = useMemo(()=>SCHEDULE.filter(d=>d.tasks.every((_,i)=>completed[`${d.day}-${i}`])).length, [completed]);
+  const completedWeeksCount = useMemo(()=>[1,2,3,4,5,6].filter(w=>SCHEDULE.filter(d=>d.week===w).every(d=>d.tasks.every((_,i)=>completed[`${d.day}-${i}`]))).length, [completed]);
+  const totalTasks = useMemo(()=>SCHEDULE.reduce((acc,d)=>acc+d.tasks.length,0), []);
+  const totalDone = Object.values(completed).filter(Boolean).length;
+  const progressPct = totalTasks===0?0:Math.round(totalDone/totalTasks*100);
+
+  const streak = useMemo(() => {
+    let n = todayNum; if (!dayComplete(n)) n = n-1;
+    let s=0; while(n>=1 && dayComplete(n)){ s++; n--; } return s;
+  }, [completed, todayNum]);
+
+  /* readiness */
+  const enteredSims = meta.sims.map(Number).filter((s,i)=>meta.sims[i]!=null && meta.sims[i]!=='' && !isNaN(s));
+  const latestSim = (()=>{ for(let i=meta.sims.length-1;i>=0;i--){ const v=meta.sims[i]; if(v!=null && v!=='' && !isNaN(Number(v))) return Number(v); } return null; })();
+  const readinessZone = latestSim==null?null : latestSim>=80?'GO' : latestSim>=70?'CAUTION':'NOT READY';
+  const simTrend = (()=>{ if(enteredSims.length<2) return null; const d=enteredSims[enteredSims.length-1]-enteredSims[0]; return d>0?['▲','climbing','#3fb950']:d<0?['▼','dropping','#f0556b']:['→','flat','#8b98a8']; })();
+
+  /* XP + rank */
+  const xp = totalDone*TASK_XP + completedDaysCount*DAY_XP + completedWeeksCount*WEEK_XP + enteredSims.length*SIM_XP + meta.drills*DRILL_XP;
+  let rankIdx = 0; for(let i=0;i<RANKS.length;i++){ if(xp>=RANKS[i].xp) rankIdx=i; }
+  const rank = RANKS[rankIdx];
+  const nextRank = RANKS[rankIdx+1];
+  const pctToNext = nextRank ? (xp-rank.xp)/(nextRank.xp-rank.xp) : 1;
+
+  /* achievements */
+  const earned = {
+    first: totalDone>0,
+    day1: completedDaysCount>0,
+    streak3: streak>=3,
+    drill: meta.drills>0,
+    perfect: meta.bestDrill>=100,
+    week: completedWeeksCount>0,
+    half: progressPct>=50,
+    sim: enteredSims.length>0,
+    ready: readinessZone==='GO',
+    soc: rankIdx>=4,
+    complete: progressPct>=100,
+  };
+  const unlocked = ACHIEVEMENTS.filter(a=>earned[a.id]).map(a=>a.id);
+
+  /* celebrate level-ups + new achievements */
   useEffect(() => {
-    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(completed)); } catch (e) {}
-  }, [completed]);
-
-  const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null), 2300); };
+    if (firstRun.current) {
+      firstRun.current = false;
+      if (meta.seen.length !== unlocked.length || meta.lastRank !== rankIdx) {
+        setMeta(m => ({ ...m, seen: unlocked, lastRank: rankIdx }));
+      }
+      return;
+    }
+    const newly = unlocked.filter(id => !meta.seen.includes(id));
+    const leveled = rankIdx > meta.lastRank;
+    if (newly.length || leveled) {
+      if (leveled) { fireConfetti(true); showToast(`RANK UP → ${rank.icon} ${rank.name}`); }
+      else if (newly.length) { const a = ACHIEVEMENTS.find(x=>x.id===newly[0]); fireConfetti(false); showToast(`🏅 Unlocked: ${a.name}`); }
+      setMeta(m => ({ ...m, seen: unlocked, lastRank: rankIdx }));
+    }
+  }, [completed, meta.sims, meta.drills]);
 
   const toggleTask = (day, idx) => {
     const key = `${day}-${idx}`;
@@ -427,29 +556,21 @@ function StudyTracker() {
     setTimeout(() => setJustToggled(null), 360);
     if (!before && after) {
       fireConfetti(false);
-      showToast(`Day ${day} complete 🎉`);
       const weekDays = SCHEDULE.filter(d => d.week === dayObj.week);
       const weekDone = weekDays.every(d => d.tasks.every((_, i) => next[`${d.day}-${i}`]));
-      if (weekDone) setTimeout(() => { fireConfetti(true); showToast(`Week ${dayObj.week} crushed 🔥`); }, 450);
+      if (weekDone) { setTimeout(()=>{ fireConfetti(true); showToast(`Week ${dayObj.week} crushed 🔥 +${WEEK_XP} XP`); }, 450); }
+      else showToast(`Day ${day} complete 🎉 +${DAY_XP} XP`);
     }
   };
 
-  const resetAll = () => { if (window.confirm('Reset all progress? This cannot be undone.')) setCompleted({}); };
+  const setSim = (idx, val) => {
+    setMeta(m => { const s=[...m.sims]; s[idx] = (val==='' ? null : Math.max(0, Math.min(100, Number(val)))); return { ...m, sims:s }; });
+  };
+  const handleDrillComplete = (pct) => { setMeta(m => ({ ...m, drills:m.drills+1, bestDrill:Math.max(m.bestDrill,pct) })); };
 
-  const daysUntilExam = useMemo(() => {
-    const diff = EXAM_DATE - new Date();
-    return Math.max(0, Math.ceil(diff / (1000*60*60*24)));
-  }, []);
+  const resetAll = () => { if (window.confirm('Reset ALL progress — tasks, XP, sims, achievements? This cannot be undone.')) { setCompleted({}); setMeta({ sims:[null,null,null], drills:0, bestDrill:0, seen:[], lastRank:0 }); firstRun.current = true; } };
 
-  const dayComplete = (dn) => { const o=SCHEDULE.find(d=>d.day===dn); return o && o.tasks.length>0 && o.tasks.every((_,i)=>completed[`${dn}-${i}`]); };
-  const streak = useMemo(() => {
-    let n = todayNum; if (!dayComplete(n)) n = n-1;
-    let s=0; while(n>=1 && dayComplete(n)){ s++; n--; } return s;
-  }, [completed, todayNum]);
-
-  const totalTasks = SCHEDULE.reduce((acc, d) => acc + d.tasks.length, 0);
-  const completedCount = Object.values(completed).filter(Boolean).length;
-  const progressPct = totalTasks === 0 ? 0 : Math.round((completedCount / totalTasks) * 100);
+  const daysUntilExam = useMemo(() => Math.max(0, Math.ceil((EXAM_DATE - new Date())/(1000*60*60*24))), []);
 
   const weeks = [1,2,3,4,5,6];
   const weekLabels = { 1:'Domain 1', 2:'Domain 2', 3:'Domain 3', 4:'Domain 4 (pt 1)', 5:'Domain 4/5', 6:'Sims + Exam' };
@@ -467,66 +588,106 @@ function StudyTracker() {
 
   return (
     <div>
-      <div style={{ padding: '30px 16px 10px', maxWidth: 840, margin: '0 auto' }}>
-        <h1 style={{ fontSize: 25, fontWeight: 700, letterSpacing: '-0.5px' }}>
-          SY0-701 <span style={{ color: '#f2a900' }}>·</span> 42-Day Sprint
+      <div style={{ padding:'30px 16px 10px', maxWidth:840, margin:'0 auto' }}>
+        <h1 style={{ fontSize:25, fontWeight:700, letterSpacing:'-0.5px' }}>
+          SY0-701 <span style={{ color:'#f2a900' }}>·</span> 42-Day Sprint
         </h1>
-        <p style={{ color: '#8b98a8', fontSize: 13.5, marginTop: 4 }}>
-          June 19 → July 30, 2026 · Exam 10:15 AM · Check-in 9:45 AM
-        </p>
+        <p style={{ color:'#8b98a8', fontSize:13.5, marginTop:4 }}>June 19 → July 30, 2026 · Exam 10:15 AM · Check-in 9:45 AM</p>
       </div>
 
       <div style={{ position:'sticky', top:0, zIndex:20, background:'rgba(14,17,22,0.92)', backdropFilter:'blur(10px)', borderBottom:'1px solid #283340' }}>
-        <div style={{ maxWidth:840, margin:'0 auto', padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:14 }}>
-          <div className="mono" style={{ fontSize:13, color:'#8b98a8', whiteSpace:'nowrap' }}>
-            <span style={{ color:'#f2a900', fontWeight:700 }}>{daysUntilExam}</span> days left
-          </div>
-          <div className="mono" style={{ fontSize:13, color: streak>0?'#ff8c42':'#566', whiteSpace:'nowrap' }}>
-            🔥 <span style={{fontWeight:700}}>{streak}</span>
-          </div>
-          <div style={{ flex:1, maxWidth:160 }}>
-            <div style={{ height:6, background:'#1c232d', borderRadius:99, overflow:'hidden' }}>
-              <div style={{ height:'100%', width:`${progressPct}%`, background:'#3fb950', borderRadius:99, transition:'width 0.3s' }} />
-            </div>
-          </div>
+        <div style={{ maxWidth:840, margin:'0 auto', padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+          <div className="mono" style={{ fontSize:13, color:'#8b98a8', whiteSpace:'nowrap' }}><span style={{ color:'#f2a900', fontWeight:700 }}>{daysUntilExam}</span> days</div>
+          <div className="mono" style={{ fontSize:13, color:'#f2a900', whiteSpace:'nowrap', fontWeight:700 }}>{rank.icon} LVL {rankIdx+1}</div>
+          <div className="mono" style={{ fontSize:13, color: streak>0?'#ff8c42':'#566', whiteSpace:'nowrap' }}>🔥 <span style={{fontWeight:700}}>{streak}</span></div>
+          <div style={{ flex:1, maxWidth:120 }}><div style={{ height:6, background:'#1c232d', borderRadius:99, overflow:'hidden' }}><div style={{ height:'100%', width:`${progressPct}%`, background:'#3fb950', borderRadius:99, transition:'width 0.3s' }} /></div></div>
           <div className="mono" style={{ fontSize:13, color:'#3fb950', fontWeight:700 }}>{progressPct}%</div>
         </div>
       </div>
 
       <div style={{ maxWidth:840, margin:'0 auto', padding:'18px 16px 0' }}>
-        {todayEntry && (
-          <div className="hero">
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12,flexWrap:'wrap'}}>
+        {/* HUD hero */}
+        <div className="hero">
+          <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+            <div className="rank-badge">{rank.icon}</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8 }}>
+                <div style={{ fontSize:17, fontWeight:700 }}>{rank.name}</div>
+                <div className="mono" style={{ fontSize:12, color:'#8b98a8' }}>LVL {rankIdx+1}</div>
+              </div>
+              <div className="xp-track"><div className="xp-fill" style={{ width:`${Math.round(pctToNext*100)}%` }} /></div>
+              <div className="mono" style={{ fontSize:10.5, color:'#8b98a8', marginTop:5, display:'flex', justifyContent:'space-between' }}>
+                <span>{xp} XP</span>
+                <span>{nextRank ? `${nextRank.xp-xp} XP → ${nextRank.name}` : 'MAX RANK 🏆'}</span>
+              </div>
+            </div>
+          </div>
+
+          {todayEntry && (<>
+            <div style={{ height:1, background:'#283340', margin:'15px 0' }} />
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:12, flexWrap:'wrap' }}>
               <div>
-                <div className="mono" style={{fontSize:11,color:'#f2a900',letterSpacing:'.14em',textTransform:'uppercase',marginBottom:6}}>● Today</div>
-                <div style={{fontSize:20,fontWeight:700,marginBottom:4}}>Day {todayEntry.day} of 42 <span style={{color:'#8b98a8',fontWeight:500,fontSize:15}}>· {todayEntry.date}</span></div>
-                <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-                  <span className="mono" style={{fontSize:11,fontWeight:700,color:tColor,background:`${tColor}1a`,padding:'3px 8px',borderRadius:4,border:`1px solid ${tColor}44`}}>{todayEntry.domain}</span>
-                  <span style={{fontSize:13.5,color:'#c9d4e0'}}>{todayEntry.domainName}</span>
+                <div className="mono" style={{ fontSize:10, color:'#f2a900', letterSpacing:'.14em', textTransform:'uppercase' }}>● Day {todayEntry.day} of 42 · {todayEntry.date}</div>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:6, flexWrap:'wrap' }}>
+                  <span className="mono" style={{ fontSize:11, fontWeight:700, color:tColor, background:`${tColor}1a`, padding:'3px 8px', borderRadius:4, border:`1px solid ${tColor}44` }}>{todayEntry.domain}</span>
+                  <span style={{ fontSize:13, color:'#c9d4e0' }}>{todayEntry.domainName}</span>
                 </div>
               </div>
-              <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                <span className="chip" style={{color: todayDone===todayTotal?'#3fb950':'#8b98a8'}}>{todayDone}/{todayTotal} today</span>
-                <span className="chip" style={{color: streak>0?'#ff8c42':'#8b98a8'}}>🔥 {streak} streak</span>
+              <div style={{ display:'flex', gap:8 }}>
+                <span className="chip" style={{ color: todayDone===todayTotal?'#3fb950':'#8b98a8' }}>{todayDone}/{todayTotal} today</span>
               </div>
             </div>
-            <div style={{display:'flex',gap:10,marginTop:16,flexWrap:'wrap'}}>
-              <button className="btn-go" onClick={jumpToToday}>↓ Jump to today</button>
-              <button className="btn-drill" onClick={()=>setDrillOpen(true)}>⚡ Quick Drill</button>
-            </div>
-            {streak===0 && <div className="mono" style={{fontSize:11,color:'#8b98a8',marginTop:12}}>Finish all of today's tasks to start a streak.</div>}
+          </>)}
+
+          <div style={{ display:'flex', gap:10, marginTop:15, flexWrap:'wrap' }}>
+            <button className="btn-go" onClick={jumpToToday}>↓ Today</button>
+            <button className="btn-drill" onClick={()=>setDrillOpen(true)}>⚡ Quick Drill</button>
           </div>
-        )}
+        </div>
       </div>
 
-      <div style={{ maxWidth:840, margin:'0 auto', padding:'16px 16px' }}>
+      <div style={{ maxWidth:840, margin:'0 auto', padding:'16px 16px 0' }}>
+        {/* Mission Readiness */}
+        <div className="panel-card">
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
+            <div style={{ fontSize:14, fontWeight:700 }}>🎯 Mission Readiness</div>
+            {simTrend && <span className="mono" style={{ fontSize:11, color:simTrend[2] }}>{simTrend[0]} {simTrend[1]}</span>}
+          </div>
+          <ReadinessGauge value={latestSim} />
+          <div className="mono" style={{ fontSize:10.5, color:'#8b98a8', textAlign:'center', marginTop:2, marginBottom:16 }}>Pass bar 750/900 (~83%). Dion sims run harder — aim 80%+.</div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+            {[0,1,2].map(idx => (
+              <div key={idx}>
+                <div className="mono" style={{ fontSize:10, color:'#8b98a8', marginBottom:5, textAlign:'center' }}>Sim {idx+1} · Day {[36,38,40][idx]}</div>
+                <input className="sim-input" type="number" min="0" max="100" placeholder="--" value={meta.sims[idx]==null?'':meta.sims[idx]} onChange={e=>setSim(idx, e.target.value)} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Achievements */}
+        <div className="panel-card">
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+            <div style={{ fontSize:14, fontWeight:700 }}>🏅 Achievements</div>
+            <span className="mono" style={{ fontSize:12, color:'#8b98a8' }}>{unlocked.length}/{ACHIEVEMENTS.length}</span>
+          </div>
+          <div className="ach-grid">
+            {ACHIEVEMENTS.map(a => (
+              <div key={a.id} className={`ach ${earned[a.id]?'on':''}`} title={a.desc}>
+                <span className="ico">{a.icon}</span>
+                <span className="lbl">{a.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth:840, margin:'0 auto', padding:'0 16px 16px' }}>
         <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:16, alignItems:'center' }}>
           {weeks.map(w => (
-            <button key={w} className={`week-btn ${activeWeek===w?'active':''}`} onClick={()=>setActiveWeek(w)}>
-              Week {w} — {weekLabels[w]}
-            </button>
+            <button key={w} className={`week-btn ${activeWeek===w?'active':''}`} onClick={()=>setActiveWeek(w)}>Week {w} — {weekLabels[w]}</button>
           ))}
-          <button className="reset-btn" onClick={resetAll} style={{ marginLeft:'auto' }}>Reset progress</button>
+          <button className="reset-btn" onClick={resetAll} style={{ marginLeft:'auto' }}>Reset</button>
         </div>
 
         {visibleDays.map(d => {
@@ -535,16 +696,13 @@ function StudyTracker() {
           const isToday = d.day === todayNum;
           const color = DOMAIN_COLORS[d.domain] || '#8b98a8';
           return (
-            <div key={d.day} ref={isToday?todayRef:null}
-              className={isToday?'day-today':''}
+            <div key={d.day} ref={isToday?todayRef:null} className={isToday?'day-today':''}
               style={{ background:'#161b22', border:`1px solid ${isDayDone?'#3fb950':'#283340'}`, borderRadius:10, marginBottom:12, overflow:'hidden' }}>
               <div style={{ padding:'12px 16px', display:'flex', alignItems:'center', gap:12, borderBottom:'1px solid #283340' }}>
-                <div className="mono" style={{ fontSize:11, fontWeight:700, color, background:`${color}1a`, padding:'3px 8px', borderRadius:4, border:`1px solid ${color}44`, whiteSpace:'nowrap' }}>
-                  Day {d.day}
-                </div>
+                <div className="mono" style={{ fontSize:11, fontWeight:700, color, background:`${color}1a`, padding:'3px 8px', borderRadius:4, border:`1px solid ${color}44`, whiteSpace:'nowrap' }}>Day {d.day}</div>
                 <div className="mono" style={{ fontSize:12, color:'#8b98a8', whiteSpace:'nowrap' }}>{d.date}</div>
                 <div style={{ flex:1, fontSize:13, fontWeight:600 }}>{d.domainName}</div>
-                {isToday && <div className="mono" style={{fontSize:10,fontWeight:700,color:'#f2a900',background:'rgba(242,169,0,.14)',padding:'2px 7px',borderRadius:10,border:'1px solid #f2a90055'}}>TODAY</div>}
+                {isToday && <div className="mono" style={{ fontSize:10, fontWeight:700, color:'#f2a900', background:'rgba(242,169,0,.14)', padding:'2px 7px', borderRadius:10, border:'1px solid #f2a90055' }}>TODAY</div>}
                 <div className="mono" style={{ fontSize:11, color:'#8b98a8', whiteSpace:'nowrap' }}>{dayCompletedCount}/{d.tasks.length}</div>
               </div>
               <div style={{ padding:'8px 16px' }}>
@@ -567,7 +725,7 @@ function StudyTracker() {
       </div>
 
       {toast && <div className="toast">{toast}</div>}
-      {drillOpen && <Drill onClose={()=>setDrillOpen(false)} />}
+      {drillOpen && <Drill onClose={()=>setDrillOpen(false)} onComplete={handleDrillComplete} />}
     </div>
   );
 }
