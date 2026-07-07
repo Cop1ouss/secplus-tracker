@@ -85,6 +85,27 @@
   .xp-fill{height:100%; background:var(--cyan); transition:width .4s ease;}
   .xp-caption{font-family:var(--mono); font-size:9px; color:var(--text-dim); margin-top:5px;}
 
+  /* ---------- Daily quests ---------- */
+  .mission-card{background:var(--panel); border:2px solid var(--gold); border-radius:12px; padding:14px 16px; margin-bottom:14px;}
+  .mission-card.done{border-color:var(--hp-green);}
+  .mission-card.empty{border-color:var(--line);}
+  .mission-label{font-family:var(--pixel); font-size:9.5px; color:var(--gold); letter-spacing:.5px; margin-bottom:8px;}
+  .mission-card.done .mission-label{color:var(--hp-green);}
+  .mission-title{font-family:var(--sans); font-weight:700; font-size:13px; margin-bottom:6px; line-height:1.4;}
+  .mission-topics, .mission-target{font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-bottom:4px;}
+  .mission-track{width:100%; height:8px; background:#120f1c; border-radius:5px; overflow:hidden; border:1px solid var(--line); margin-top:8px;}
+  .mission-fill{height:100%; background:var(--gold); transition:width .4s ease;}
+  .mission-card.done .mission-fill{background:var(--hp-green);}
+  .mission-caption{font-family:var(--mono); font-size:9px; color:var(--text-dim); margin-top:6px;}
+
+  .week-list{display:flex; flex-direction:column; gap:3px; margin-bottom:20px;}
+  .week-row{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:10px; color:var(--text-dim); padding:6px 8px; border-radius:6px;}
+  .week-row.today{background:var(--panel-raised); color:var(--text);}
+  .week-row.done{color:var(--hp-green);}
+  .week-day{width:28px; flex-shrink:0; font-weight:700;}
+  .week-label{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .week-check{flex-shrink:0; width:16px; text-align:center;}
+
   .stat-row{display:flex; gap:10px; margin-bottom:22px;}
   .stat-box{
     flex:1; background:var(--panel); border:2px solid var(--line); border-radius:10px;
@@ -93,7 +114,7 @@
   .stat-box .num{font-family:var(--pixel); font-size:17px; color:var(--cyan);}
   .stat-box .lbl{font-family:var(--mono); font-size:8.5px; color:var(--text-dim); margin-top:6px; text-transform:uppercase; letter-spacing:.3px;}
 
-  .actions{display:flex; gap:10px; margin-bottom:24px;}
+  .actions{display:flex; gap:10px; margin-bottom:12px;}
   .action-btn{
     flex:1; background:var(--panel-raised); border:2px solid var(--line); border-radius:10px;
     color:var(--text); font-family:var(--sans); font-weight:700; font-size:12.5px; padding:16px 8px; cursor:pointer;
@@ -101,6 +122,13 @@
   }
   .action-btn:active{border-color:var(--gold); transform:scale(.98);}
   .action-btn .plus{color:var(--gold); font-family:var(--mono); font-size:11px; display:block; margin-top:5px;}
+
+  .actions2{display:flex; gap:10px; margin-bottom:24px;}
+  .action-btn2{
+    flex:1; background:var(--panel); border:1px solid var(--line); border-radius:9px; color:var(--text-dim);
+    font-family:var(--mono); font-size:10px; padding:11px 8px; cursor:pointer; min-height:40px;
+  }
+  .action-btn2:active{border-color:var(--gold); color:var(--gold);}
 
   .boss-list{display:flex; flex-direction:column; gap:12px;}
   .boss{
@@ -186,6 +214,11 @@
     font-family:var(--pixel); font-size:12px; color:var(--hp-green); text-align:center; letter-spacing:1px;
     border:2px solid var(--hp-green); border-radius:9px; padding:14px; margin-bottom:16px; background:rgba(74,222,128,.08);
   }
+  .quest-banner{
+    font-family:var(--pixel); font-size:10px; color:var(--gold); text-align:center; letter-spacing:.5px;
+    border:2px solid var(--gold); border-radius:9px; padding:12px; margin-bottom:16px; background:rgba(245,196,81,.08);
+    line-height:1.6;
+  }
   .briefing-head{
     font-family:var(--pixel); font-size:10.5px; letter-spacing:.5px; margin-bottom:10px;
   }
@@ -228,6 +261,8 @@
     </div>
   </div>
 
+  <div id="questSection"></div>
+
   <div class="stat-row">
     <div class="stat-box"><div class="num" id="xpTotal">0</div><div class="lbl">Total XP</div></div>
     <div class="stat-box"><div class="num" id="streakNum">0</div><div class="lbl">Day Streak</div></div>
@@ -237,6 +272,12 @@
   <div class="actions">
     <button class="action-btn" onclick="logAction('anki')">📇 Anki done<span class="plus">+10 XP</span></button>
     <button class="action-btn" onclick="logAction('obsidian')">📓 Logged entry<span class="plus">+5 XP</span></button>
+  </div>
+
+  <div class="actions2">
+    <button class="action-btn2" onclick="exportAnki()">📤 Export not-mastered (Anki)</button>
+    <button class="action-btn2" onclick="document.getElementById('importFile').click()">📥 Import new exam</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
   </div>
 
   <div class="boss-list" id="bossList"></div>
@@ -279,17 +320,29 @@ const RANKS = [
 const STORAGE_KEY = 'secplus-boss-tracker-state';
 const REVIEW_XP = 2;
 const HIT_XP = 5;
+const QUEST_BONUS_XP = 15;
 
+let baseQuestionBank = [];
 let questionBank = [];
+let QUESTS = [];
+
 let state = {
   xp: 0,
   busted: {d4:0, d2:0, d3:0, d5:0, d1:0},
   logDates: [],
   metBosses: {d4:false, d2:false, d3:false, d5:false, d1:false},
-  qstats: {}
+  qstats: {},
+  completedQuests: {},
+  dailyEngagement: {},
+  maxHpOverrides: {},
+  importedQuestions: []
 };
 
-let battle = null; // {bossId, queue:[qid,...], pos, currentQid}
+let battle = null; // {bossId, queue:[qid,...], pos, currentQid, shuffledOptions}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
 
 function loadState(){
   try{
@@ -301,6 +354,10 @@ function loadState(){
       state.metBosses = Object.assign({d4:false,d2:false,d3:false,d5:false,d1:false}, loaded.metBosses || {});
       state.qstats = loaded.qstats || {};
       state.logDates = loaded.logDates || [];
+      state.completedQuests = loaded.completedQuests || {};
+      state.dailyEngagement = loaded.dailyEngagement || {};
+      state.maxHpOverrides = loaded.maxHpOverrides || {};
+      state.importedQuestions = loaded.importedQuestions || [];
     }
   }catch(e){ /* first run, no saved state */ }
 }
@@ -310,7 +367,9 @@ function saveState(){
   }catch(e){ console.error('save failed', e); }
 }
 
-function todayStr(){ return new Date().toISOString().slice(0,10); }
+function pad2(n){ return String(n).padStart(2,'0'); }
+function ymd(y,m,d){ return `${y}-${pad2(m+1)}-${pad2(d)}`; }
+function todayStr(){ const d = new Date(); return ymd(d.getFullYear(), d.getMonth(), d.getDate()); }
 
 function computeStreak(){
   if(state.logDates.length === 0) return 0;
@@ -318,7 +377,7 @@ function computeStreak(){
   let streak = 0;
   let cursor = new Date();
   for(let i=0;i<dates.length;i++){
-    const expected = cursor.toISOString().slice(0,10);
+    const expected = ymd(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
     if(dates[i] === expected){
       streak++;
       cursor.setDate(cursor.getDate()-1);
@@ -333,7 +392,8 @@ function showToast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 1500);
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>t.classList.remove('show'), 1700);
 }
 
 function logAction(type){
@@ -350,8 +410,10 @@ function resetProgress(){
   if(!confirm('Reset all XP, streak, and boss progress? This cannot be undone.')) return;
   state = {
     xp:0, busted:{d4:0,d2:0,d3:0,d5:0,d1:0}, logDates:[],
-    metBosses:{d4:false,d2:false,d3:false,d5:false,d1:false}, qstats:{}
+    metBosses:{d4:false,d2:false,d3:false,d5:false,d1:false}, qstats:{},
+    completedQuests:{}, dailyEngagement:{}, maxHpOverrides:{}, importedQuestions:[]
   };
+  questionBank = [...baseQuestionBank];
   saveState();
   render();
 }
@@ -360,6 +422,11 @@ function hpColor(pct){
   if(pct >= 60) return 'var(--hp-red)';
   if(pct >= 25) return 'var(--hp-yellow)';
   return 'var(--hp-green)';
+}
+
+function bossMaxHp(boss){
+  const override = state.maxHpOverrides && state.maxHpOverrides[boss.id];
+  return override === undefined ? boss.maxHp : override;
 }
 
 function getRank(xp){
@@ -380,21 +447,66 @@ function renderCharPanel(){
     : `${state.xp} XP — max rank reached`;
 }
 
+function engagementForQuest(quest){
+  const day = state.dailyEngagement[quest.dateStr] || {};
+  return quest.targetBosses.reduce((sum,bid)=> sum + (day[bid]||0), 0);
+}
+
+function renderQuestsSection(){
+  const container = document.getElementById('questSection');
+  if(!QUESTS.length){ container.innerHTML = ''; return; }
+  const today = todayStr();
+  const todayQuest = QUESTS.find(q=>q.dateStr === today);
+
+  let heroHtml;
+  if(todayQuest){
+    const engaged = engagementForQuest(todayQuest);
+    const done = !!state.completedQuests[todayQuest.dateStr];
+    const pct = Math.min(100, (engaged/todayQuest.threshold)*100);
+    const bossTitles = todayQuest.targetBosses.map(bid=>BOSSES.find(b=>b.id===bid).title).join(' + ');
+    heroHtml = `
+      <div class="mission-card ${done?'done':''}">
+        <div class="mission-label">${done ? "✅ TODAY'S MISSION — COMPLETE" : "🎯 TODAY'S MISSION"}</div>
+        <div class="mission-title">${escapeHtml(todayQuest.label)}</div>
+        ${todayQuest.topics.length ? `<div class="mission-topics">Focus: ${escapeHtml(todayQuest.topics.join(', '))}</div>` : ''}
+        <div class="mission-target">Target: ${escapeHtml(bossTitles)}</div>
+        <div class="mission-track"><div class="mission-fill" style="width:${pct}%"></div></div>
+        <div class="mission-caption">${Math.min(engaged,todayQuest.threshold)} / ${todayQuest.threshold} questions engaged</div>
+      </div>`;
+  } else {
+    heroHtml = `<div class="mission-card empty"><div class="mission-label">🎯 TODAY'S MISSION</div><div class="mission-title">No mission scheduled today — free drill any boss you like.</div></div>`;
+  }
+
+  const weekHtml = QUESTS.map(q=>{
+    const isToday = q.dateStr === today;
+    const done = !!state.completedQuests[q.dateStr];
+    return `<div class="week-row ${isToday?'today':''} ${done?'done':''}">
+      <span class="week-day">${escapeHtml(q.weekday)}</span>
+      <span class="week-label">${escapeHtml(q.label)}</span>
+      <span class="week-check">${done ? '✅' : isToday ? '▶' : ''}</span>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = heroHtml + `<div class="week-list">${weekHtml}</div>`;
+}
+
 function render(flash, flashBoss){
   document.getElementById('xpTotal').textContent = state.xp;
   document.getElementById('streakNum').textContent = computeStreak();
   const totalBusted = Object.values(state.busted).reduce((a,b)=>a+b,0);
-  const totalMax = BOSSES.reduce((a,b)=>a+b.maxHp,0);
+  const totalMax = BOSSES.reduce((a,b)=>a+bossMaxHp(b),0);
   document.getElementById('bustedTotal').textContent = `${totalBusted}/${totalMax}`;
 
   renderCharPanel();
+  renderQuestsSection();
 
   const list = document.getElementById('bossList');
   list.innerHTML = '';
   BOSSES.forEach(boss=>{
+    const maxHp = bossMaxHp(boss);
     const busted = state.busted[boss.id];
-    const hpRemaining = boss.maxHp - busted;
-    const pctRemaining = (hpRemaining / boss.maxHp) * 100;
+    const hpRemaining = maxHp - busted;
+    const pctRemaining = (hpRemaining / maxHp) * 100;
     const defeated = hpRemaining <= 0;
 
     const div = document.createElement('div');
@@ -406,7 +518,7 @@ function render(flash, flashBoss){
         ${defeated ? '<span class="defeated-tag">DEFEATED</span>' : ''}
       </div>
       <div class="boss-name">${boss.domainLabel}</div>
-      <div class="boss-sub">${hpRemaining} / ${boss.maxHp} HP · ${Math.round((busted/boss.maxHp)*100)}% mastery</div>
+      <div class="boss-sub">${hpRemaining} / ${maxHp} HP · ${Math.round((busted/maxHp)*100)}% mastery</div>
       <div class="hp-track"><div class="hp-fill" style="width:${pctRemaining}%; background:${hpColor(pctRemaining)}"></div></div>
       <div class="boss-controls">
         <span class="hp-text">${busted} traps busted</span>
@@ -451,8 +563,9 @@ function openBattle(bossId){
 }
 
 function renderIntroScreen(boss){
-  const hpRemaining = boss.maxHp - state.busted[boss.id];
-  const pct = (hpRemaining / boss.maxHp) * 100;
+  const maxHp = bossMaxHp(boss);
+  const hpRemaining = maxHp - state.busted[boss.id];
+  const pct = (hpRemaining / maxHp) * 100;
   document.getElementById('battleContent').innerHTML = `
     <div class="battle-boss-title">${boss.title}</div>
     <div class="battle-boss-sub">${boss.domainLabel}</div>
@@ -472,6 +585,13 @@ function startBattleQuestions(bossId){
 
 function renderQuestionScreen(){
   const boss = BOSSES.find(b=>b.id===battle.bossId);
+  if(battle.queue.length === 0){
+    document.getElementById('battleContent').innerHTML = `
+      <div class="battle-boss-title">${boss.title}</div>
+      <div class="flavor-text">No questions loaded for this domain yet.</div>
+    `;
+    return;
+  }
   if(battle.pos >= battle.queue.length){
     battle.queue = buildQueue(battle.bossId);
     battle.pos = 0;
@@ -487,17 +607,18 @@ function renderQuestionScreen(){
   }
   battle.shuffledOptions = opts;
 
-  const hpRemaining = boss.maxHp - state.busted[boss.id];
-  const pct = (hpRemaining / boss.maxHp) * 100;
+  const maxHp = bossMaxHp(boss);
+  const hpRemaining = maxHp - state.busted[boss.id];
+  const pct = (hpRemaining / maxHp) * 100;
   const defeated = hpRemaining <= 0;
 
   document.getElementById('battleContent').innerHTML = `
     <div class="battle-boss-title">${boss.title}${defeated ? ' · <span style="color:var(--hp-green)">DEFEATED</span>' : ''}</div>
-    <div class="battle-boss-sub">${boss.domainLabel} — ${hpRemaining}/${boss.maxHp} HP${defeated ? ' (review mode)' : ''}</div>
+    <div class="battle-boss-sub">${boss.domainLabel} — ${hpRemaining}/${maxHp} HP${defeated ? ' (review mode)' : ''}</div>
     <div class="battle-hp-track"><div class="battle-hp-fill" style="width:${pct}%; background:${hpColor(pct)}"></div></div>
-    <div class="q-text">${q.question}</div>
+    <div class="q-text">${escapeHtml(q.question)}</div>
     <div class="q-options" id="qOptions">
-      ${opts.map((o,i)=>`<button class="q-opt" data-idx="${i}" onclick="answerQuestion(${i})">${o}</button>`).join('')}
+      ${opts.map((o,i)=>`<button class="q-opt" data-idx="${i}" onclick="answerQuestion(${i})">${escapeHtml(o)}</button>`).join('')}
     </div>
     <div class="q-meta">${state.qstats[qid].box >= 2 ? 'mastered · spaced review' : state.qstats[qid].box === 1 ? 'review queue' : 'priority target'}</div>
   `;
@@ -505,6 +626,7 @@ function renderQuestionScreen(){
 
 function answerQuestion(idx){
   const boss = BOSSES.find(b=>b.id===battle.bossId);
+  const maxHp = bossMaxHp(boss);
   const q = questionBank.find(x=>x.id===battle.currentQid);
   const chosen = battle.shuffledOptions[idx];
   const correct = chosen === q.answer;
@@ -517,7 +639,7 @@ function answerQuestion(idx){
   });
 
   stat.seen++;
-  const wasDefeatedAlready = state.busted[boss.id] >= boss.maxHp;
+  const wasDefeatedAlready = state.busted[boss.id] >= maxHp;
   let xpGain = 0;
   let justDefeated = false;
 
@@ -528,7 +650,7 @@ function answerQuestion(idx){
     if(!wasDefeatedAlready){
       state.busted[boss.id]++;
       xpGain = HIT_XP;
-      if(state.busted[boss.id] >= boss.maxHp) justDefeated = true;
+      if(state.busted[boss.id] >= maxHp) justDefeated = true;
     } else {
       xpGain = REVIEW_XP;
     }
@@ -541,12 +663,31 @@ function answerQuestion(idx){
   }
 
   state.xp += xpGain;
+
+  const today = todayStr();
+  state.dailyEngagement[today] = state.dailyEngagement[today] || {};
+  state.dailyEngagement[today][boss.id] = (state.dailyEngagement[today][boss.id] || 0) + 1;
+  const completedQuest = checkQuestCompletion(today);
+
   saveState();
 
-  setTimeout(()=>renderBriefing(q, correct, xpGain, justDefeated), 550);
+  setTimeout(()=>renderBriefing(q, correct, xpGain, justDefeated, completedQuest), 550);
 }
 
-function renderBriefing(q, correct, xpGain, justDefeated){
+function checkQuestCompletion(dateStr){
+  const quest = QUESTS.find(q=>q.dateStr === dateStr);
+  if(!quest) return null;
+  if(state.completedQuests[dateStr]) return null;
+  const engaged = engagementForQuest(quest);
+  if(engaged >= quest.threshold){
+    state.completedQuests[dateStr] = true;
+    state.xp += QUEST_BONUS_XP;
+    return quest;
+  }
+  return null;
+}
+
+function renderBriefing(q, correct, xpGain, justDefeated, completedQuest){
   const boss = BOSSES.find(b=>b.id===battle.bossId);
   const lede = correct
     ? `You pierce ${boss.title}'s defenses. Recovered logs confirm:`
@@ -554,12 +695,13 @@ function renderBriefing(q, correct, xpGain, justDefeated){
 
   document.getElementById('battleContent').innerHTML = `
     ${justDefeated ? `<div class="defeat-banner">🏆 ${boss.title} DEFEATED</div>` : ''}
+    ${completedQuest ? `<div class="quest-banner">🎯 MISSION COMPLETE<br>"${escapeHtml(completedQuest.label)}" (+${QUEST_BONUS_XP} XP)</div>` : ''}
     <div class="briefing-head ${correct ? 'hit' : 'miss'}">${correct ? '◆ HIT LANDED — INTEL EXTRACTED ◆' : '◆ MISS — INTEL LEAKED ANYWAY ◆'}</div>
     ${xpGain > 0 ? `<div class="xp-pill">+${xpGain} XP</div>` : ''}
     <div class="briefing-card">
       <div class="briefing-lede">${lede}</div>
-      ${!correct ? `<div class="briefing-answer">Correct answer: ${q.answer}</div>` : ''}
-      <div class="briefing-why">${q.why}</div>
+      ${!correct ? `<div class="briefing-answer">Correct answer: ${escapeHtml(q.answer)}</div>` : ''}
+      <div class="briefing-why">${escapeHtml(q.why || '')}</div>
     </div>
     <button class="continue-btn" onclick="nextQuestion()">Continue ▶</button>
   `;
@@ -578,21 +720,168 @@ function closeBattle(){
   render();
 }
 
+/* ---------- Daily quests ---------- */
+
+const MONTH_MAP = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+const QUEST_LINE_RE = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+([A-Za-z]{3})\s+(\d{1,2})\s+—\s+(.+)$/;
+
+function parseQuests(mdText){
+  const year = new Date().getFullYear();
+  const quests = [];
+  for(const rawLine of mdText.split('\n')){
+    const line = rawLine.trim();
+    const m = line.match(QUEST_LINE_RE);
+    if(!m) continue;
+    const [, weekday, monAbbr, dayNum, rest] = m;
+    const monthIdx = MONTH_MAP[monAbbr];
+    if(monthIdx === undefined) continue;
+    const dateStr = ymd(year, monthIdx, parseInt(dayNum,10));
+    const colonIdx = rest.indexOf(':');
+    const label = colonIdx === -1 ? rest.trim() : rest.slice(0, colonIdx).trim();
+    const topicsPart = colonIdx === -1 ? '' : rest.slice(colonIdx+1).trim();
+    const topics = topicsPart ? topicsPart.split(',').map(t=>t.trim()).filter(Boolean) : [];
+    const domainMatches = [...label.matchAll(/Domain\s+(\d)/g)].map(x=>x[1]);
+    const targetBosses = domainMatches.length
+      ? domainMatches.map(dNum => BOSSES.find(b=>b.domain === `${dNum}.0`)).filter(Boolean).map(b=>b.id)
+      : BOSSES.map(b=>b.id);
+    const threshold = domainMatches.length ? Math.min(20, 5 * domainMatches.length) : 20;
+    quests.push({ weekday, dateStr, label, topics, targetBosses, threshold });
+  }
+  return quests;
+}
+
+async function loadQuests(){
+  try{
+    const res = await fetch('./week1_sprint.md');
+    const text = await res.text();
+    QUESTS = parseQuests(text);
+  }catch(e){
+    console.error('failed to load week1_sprint.md', e);
+    QUESTS = [];
+  }
+}
+
+/* ---------- Anki export ---------- */
+
+function cleanField(s){ return String(s).replace(/[\t\r\n]+/g, ' ').trim(); }
+
+function buildAnkiExportText(){
+  const notMastered = questionBank.filter(q => !(state.qstats[q.id] && state.qstats[q.id].box >= 2));
+  return notMastered.map(q=>{
+    const front = cleanField(`${q.question} Options: ${q.options.join(' | ')}`);
+    const back = cleanField(`${q.answer} — ${q.why || ''}`);
+    return `${front}\t${back}`;
+  }).join('\n');
+}
+
+function downloadTextFile(content, filename){
+  const blob = new Blob([content], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportAnki(){
+  const content = buildAnkiExportText();
+  if(!content){ showToast('NOTHING TO EXPORT — ALL MASTERED'); return; }
+  downloadTextFile(content, 'secplus_anki_export.txt');
+  showToast('ANKI EXPORT DOWNLOADED');
+}
+
+/* ---------- Import future exam data ---------- */
+
+function applyImportedQuestions(){
+  (state.importedQuestions || []).forEach(q=>{
+    const idx = questionBank.findIndex(x=>x.id===q.id);
+    if(idx === -1) questionBank.push(q); else questionBank[idx] = q;
+  });
+}
+
+function mergeQuestionBank(incoming){
+  let added = 0, updated = 0;
+  const newWeakByDomain = {};
+  incoming.forEach(q=>{
+    if(!q || typeof q.id !== 'string' || typeof q.domain !== 'string' || typeof q.question !== 'string'
+       || !Array.isArray(q.options) || typeof q.answer !== 'string') return;
+    const idx = questionBank.findIndex(x=>x.id===q.id);
+    if(idx === -1){
+      questionBank.push(q);
+      added++;
+      if(q.gotRightAttempt1 === false){
+        newWeakByDomain[q.domain] = (newWeakByDomain[q.domain]||0) + 1;
+      }
+    } else {
+      questionBank[idx] = q;
+      updated++;
+    }
+  });
+
+  if(added === 0 && updated === 0){
+    showToast('NO VALID QUESTIONS FOUND');
+    return;
+  }
+
+  state.importedQuestions = state.importedQuestions || [];
+  incoming.forEach(q=>{
+    if(!q || typeof q.id !== 'string') return;
+    const idx = state.importedQuestions.findIndex(x=>x.id===q.id);
+    if(idx === -1) state.importedQuestions.push(q); else state.importedQuestions[idx] = q;
+  });
+
+  state.maxHpOverrides = state.maxHpOverrides || {};
+  Object.entries(newWeakByDomain).forEach(([domain, count])=>{
+    const boss = BOSSES.find(b=>b.domain===domain);
+    if(!boss) return;
+    const current = state.maxHpOverrides[boss.id] ?? boss.maxHp;
+    state.maxHpOverrides[boss.id] = current + count;
+  });
+
+  saveState();
+  render();
+  showToast(`IMPORTED: +${added} new / ${updated} updated`);
+}
+
+function handleImportFile(event){
+  const file = event.target.files[0];
+  event.target.value = '';
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const incoming = JSON.parse(reader.result);
+      if(!Array.isArray(incoming)) throw new Error('Expected a JSON array');
+      mergeQuestionBank(incoming);
+    }catch(e){
+      console.error('import failed', e);
+      showToast('IMPORT FAILED — CHECK FILE FORMAT');
+    }
+  };
+  reader.onerror = () => showToast('IMPORT FAILED — COULD NOT READ FILE');
+  reader.readAsText(file);
+}
+
 /* ---------- Boot ---------- */
 
 async function loadQuestionBank(){
   try{
     const res = await fetch('./question_bank.json');
-    questionBank = await res.json();
+    baseQuestionBank = await res.json();
   }catch(e){
     console.error('failed to load question_bank.json', e);
-    questionBank = [];
+    baseQuestionBank = [];
   }
 }
 
 (async function init(){
   loadState();
-  await loadQuestionBank();
+  await Promise.all([loadQuestionBank(), loadQuests()]);
+  questionBank = [...baseQuestionBank];
+  applyImportedQuestions();
+  document.getElementById('importFile').addEventListener('change', handleImportFile);
   render();
 })();
 

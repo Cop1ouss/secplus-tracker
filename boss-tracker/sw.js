@@ -1,5 +1,5 @@
-const CACHE_NAME = 'secplus-boss-tracker-v2';
-const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png', './question_bank.json'];
+const CACHE_NAME = 'secplus-boss-tracker-v3';
+const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png', './question_bank.json', './week1_sprint.md'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
