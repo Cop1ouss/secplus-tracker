@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#161320">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sec+ Bosses">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Sec+ Boss Battle Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700;800&display=swap');
+
+  :root{
+    --bg-deep:#161320;
+    --panel:#211c30;
+    --panel-raised:#2b2440;
+    --line:#3a3153;
+    --text:#ece7f7;
+    --text-dim:#9d93bb;
+    --gold:#f5c451;
+    --cyan:#00c8ff;
+    --hp-green:#4ade80;
+    --hp-yellow:#facc15;
+    --hp-red:#f87171;
+    --pixel:'Press Start 2P', monospace;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg-deep); color:var(--text); font-family:var(--sans);
+    padding:20px 14px calc(20px + env(safe-area-inset-bottom));
+    overscroll-behavior:none;
+  }
+
+  .frame{max-width:520px; margin:0 auto;}
+  .title{
+    font-family:var(--pixel); font-size:13px; color:var(--gold); text-align:center;
+    letter-spacing:1px; margin-bottom:4px; line-height:1.8;
+  }
+  .subtitle{text-align:center; font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-bottom:22px;}
+
+  .stat-row{display:flex; gap:10px; margin-bottom:22px;}
+  .stat-box{
+    flex:1; background:var(--panel); border:2px solid var(--line); border-radius:10px;
+    padding:12px 6px; text-align:center;
+  }
+  .stat-box .num{font-family:var(--pixel); font-size:17px; color:var(--cyan);}
+  .stat-box .lbl{font-family:var(--mono); font-size:8.5px; color:var(--text-dim); margin-top:6px; text-transform:uppercase; letter-spacing:.3px;}
+
+  .actions{display:flex; gap:10px; margin-bottom:24px;}
+  .action-btn{
+    flex:1; background:var(--panel-raised); border:2px solid var(--line); border-radius:10px;
+    color:var(--text); font-family:var(--sans); font-weight:700; font-size:12.5px; padding:16px 8px; cursor:pointer;
+    min-height:64px;
+  }
+  .action-btn:active{border-color:var(--gold); transform:scale(.98);}
+  .action-btn .plus{color:var(--gold); font-family:var(--mono); font-size:11px; display:block; margin-top:5px;}
+
+  .boss-list{display:flex; flex-direction:column; gap:12px;}
+  .boss{
+    background:var(--panel); border:2px solid var(--line); border-radius:10px; padding:14px 16px;
+  }
+  .boss-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:6px;}
+  .boss-name{font-family:var(--sans); font-weight:800; font-size:13.5px;}
+  .boss-sub{font-family:var(--mono); font-size:10px; color:var(--text-dim);}
+  .hp-track{
+    width:100%; height:16px; background:#120f1c; border-radius:8px; overflow:hidden; border:1px solid var(--line);
+    margin-bottom:10px;
+  }
+  .hp-fill{height:100%; transition:width .4s ease; border-radius:8px;}
+  .boss-controls{display:flex; justify-content:space-between; align-items:center;}
+  .hp-text{font-family:var(--mono); font-size:10.5px; color:var(--text-dim);}
+  .bust-btn{
+    background:var(--panel-raised); border:1px solid var(--gold); color:var(--gold); font-family:var(--sans);
+    font-weight:700; font-size:11.5px; padding:9px 14px; border-radius:7px; cursor:pointer; min-height:40px;
+  }
+  .bust-btn:active{background:var(--gold); color:#231a0a;}
+  .bust-btn:disabled{opacity:.35; border-color:var(--line); color:var(--text-dim); background:transparent;}
+  .defeated-tag{font-family:var(--pixel); font-size:8.5px; color:var(--hp-green); letter-spacing:1px;}
+
+  .flash{animation:flashPulse .5s ease;}
+  @keyframes flashPulse{
+    0%{box-shadow:0 0 0 0 rgba(245,196,81,.6);}
+    100%{box-shadow:0 0 0 12px rgba(245,196,81,0);}
+  }
+
+  .reset-row{text-align:center; margin-top:24px; padding-bottom:10px;}
+  .reset-link{font-family:var(--mono); font-size:10px; color:var(--text-dim); background:none; border:none; cursor:pointer; text-decoration:underline;}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:var(--panel-raised); border:2px solid var(--gold); color:var(--gold); font-family:var(--pixel);
+    font-size:9.5px; padding:12px 16px; border-radius:8px; transition:.25s; pointer-events:none; z-index:100;
+    max-width:88%; text-align:center;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="title">⚔ SEC+ BOSS BATTLE TRACKER ⚔</div>
+  <div class="subtitle">5 domains. 5 bosses. every busted trap is a hit.</div>
+
+  <div class="stat-row">
+    <div class="stat-box"><div class="num" id="xpTotal">0</div><div class="lbl">Total XP</div></div>
+    <div class="stat-box"><div class="num" id="streakNum">0</div><div class="lbl">Day Streak</div></div>
+    <div class="stat-box"><div class="num" id="bustedTotal">0/43</div><div class="lbl">Busted</div></div>
+  </div>
+
+  <div class="actions">
+    <button class="action-btn" onclick="logAction('anki')">📇 Anki done<span class="plus">+10 XP</span></button>
+    <button class="action-btn" onclick="logAction('obsidian')">📓 Logged entry<span class="plus">+5 XP</span></button>
+  </div>
+
+  <div class="boss-list" id="bossList"></div>
+
+  <div class="reset-row">
+    <button class="reset-link" onclick="resetProgress()">reset all progress</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BOSSES = [
+  {id:'d4', name:'Domain 4.0 — Security Operations', maxHp:15},
+  {id:'d2', name:'Domain 2.0 — Threats, Vulnerabilities & Mitigations', maxHp:8},
+  {id:'d3', name:'Domain 3.0 — Security Architecture', maxHp:8},
+  {id:'d5', name:'Domain 5.0 — Security Program Management', maxHp:7},
+  {id:'d1', name:'Domain 1.0 — General Security Concepts', maxHp:5},
+];
+
+const STORAGE_KEY = 'secplus-boss-tracker-state';
+
+let state = {
+  xp: 0,
+  busted: {d4:0, d2:0, d3:0, d5:0, d1:0},
+  logDates: []
+};
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) state = JSON.parse(raw);
+  }catch(e){ /* first run, no saved state */ }
+  render();
+}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){ console.error('save failed', e); }
+}
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function computeStreak(){
+  if(state.logDates.length === 0) return 0;
+  const dates = [...new Set(state.logDates)].sort().reverse();
+  let streak = 0;
+  let cursor = new Date();
+  for(let i=0;i<dates.length;i++){
+    const expected = cursor.toISOString().slice(0,10);
+    if(dates[i] === expected){
+      streak++;
+      cursor.setDate(cursor.getDate()-1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1500);
+}
+
+function logAction(type){
+  const xpGain = type === 'anki' ? 10 : 5;
+  state.xp += xpGain;
+  state.logDates.push(todayStr());
+  saveState();
+  render();
+  showToast(`+${xpGain} XP EARNED`);
+  if(navigator.vibrate) navigator.vibrate(15);
+}
+
+function bustTrap(bossId){
+  const boss = BOSSES.find(b=>b.id===bossId);
+  if(state.busted[bossId] < boss.maxHp){
+    state.busted[bossId]++;
+    state.xp += 3;
+    saveState();
+    render(true, bossId);
+    showToast('TRAP BUSTED! +3 XP');
+    if(navigator.vibrate) navigator.vibrate([15,30,15]);
+  }
+}
+
+function resetProgress(){
+  if(!confirm('Reset all XP, streak, and boss progress? This cannot be undone.')) return;
+  state = { xp:0, busted:{d4:0,d2:0,d3:0,d5:0,d1:0}, logDates:[] };
+  saveState();
+  render();
+}
+
+function hpColor(pct){
+  if(pct >= 60) return 'var(--hp-red)';
+  if(pct >= 25) return 'var(--hp-yellow)';
+  return 'var(--hp-green)';
+}
+
+function render(flash, flashBoss){
+  document.getElementById('xpTotal').textContent = state.xp;
+  document.getElementById('streakNum').textContent = computeStreak();
+  const totalBusted = Object.values(state.busted).reduce((a,b)=>a+b,0);
+  const totalMax = BOSSES.reduce((a,b)=>a+b.maxHp,0);
+  document.getElementById('bustedTotal').textContent = `${totalBusted}/${totalMax}`;
+
+  const list = document.getElementById('bossList');
+  list.innerHTML = '';
+  BOSSES.forEach(boss=>{
+    const busted = state.busted[boss.id];
+    const hpRemaining = boss.maxHp - busted;
+    const pctRemaining = (hpRemaining / boss.maxHp) * 100;
+    const defeated = hpRemaining <= 0;
+
+    const div = document.createElement('div');
+    div.className = 'boss' + (flashBoss === boss.id ? ' flash' : '');
+    div.innerHTML = `
+      <div class="boss-head">
+        <span class="boss-name">${boss.name}</span>
+        ${defeated ? '<span class="defeated-tag">DEFEATED</span>' : ''}
+      </div>
+      <div class="boss-sub">${hpRemaining} / ${boss.maxHp} HP · ${Math.round((busted/boss.maxHp)*100)}% mastery</div>
+      <div class="hp-track"><div class="hp-fill" style="width:${pctRemaining}%; background:${hpColor(pctRemaining)}"></div></div>
+      <div class="boss-controls">
+        <span class="hp-text">${busted} traps busted</span>
+        <button class="bust-btn" ${defeated?'disabled':''} onclick="bustTrap('${boss.id}')">⚡ Bust a trap</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+loadState();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
