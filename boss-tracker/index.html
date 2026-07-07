@@ -44,6 +44,47 @@
   }
   .subtitle{text-align:center; font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-bottom:22px;}
 
+  /* ---------- Character panel ---------- */
+  .char-panel{
+    display:flex; align-items:center; gap:14px; background:var(--panel); border:2px solid var(--line);
+    border-radius:12px; padding:14px; margin-bottom:20px;
+  }
+  .avatar-wrap{width:64px; height:76px; position:relative; flex-shrink:0;}
+  .avatar{width:100%; height:100%; position:relative;}
+  .avatar .cape{
+    position:absolute; top:12px; left:-8px; width:80px; height:58px;
+    background:linear-gradient(180deg, var(--gold), rgba(245,196,81,0));
+    clip-path:polygon(22% 0%, 78% 0%, 100% 100%, 0% 100%);
+    opacity:0; transition:opacity .35s; z-index:0;
+  }
+  .avatar .hood{
+    position:absolute; top:8px; left:8px; width:48px; height:56px; background:var(--panel-raised);
+    border:2px solid var(--line); border-radius:24px 24px 14px 14px / 30px 30px 10px 10px; z-index:1;
+  }
+  .avatar .visor{
+    position:absolute; top:27px; left:16px; width:32px; height:11px; background:var(--cyan);
+    border-radius:6px; box-shadow:0 0 8px var(--cyan); z-index:2; transition:.3s;
+  }
+  .avatar .badge{
+    position:absolute; bottom:15px; left:26px; width:12px; height:12px; background:var(--gold);
+    border-radius:2px; transform:rotate(45deg); opacity:0; box-shadow:0 0 6px var(--gold); z-index:2; transition:.3s;
+  }
+  .avatar.rank-analyst .badge,
+  .avatar.rank-sentinel .badge,
+  .avatar.rank-full .badge{opacity:1;}
+  .avatar.rank-sentinel .cape,
+  .avatar.rank-full .cape{opacity:.85;}
+  .avatar.rank-sentinel .visor{background:var(--gold); box-shadow:0 0 10px var(--gold);}
+  .avatar.rank-full .visor{background:var(--hp-green); box-shadow:0 0 12px var(--hp-green);}
+  .avatar.rank-full .cape{opacity:1;}
+
+  .char-info{flex:1; min-width:0;}
+  .char-name{font-family:var(--sans); font-weight:800; font-size:13.5px;}
+  .char-rank{font-family:var(--mono); font-size:10.5px; color:var(--gold); margin-top:2px; margin-bottom:8px; letter-spacing:.4px;}
+  .xp-track{width:100%; height:9px; background:#120f1c; border-radius:5px; overflow:hidden; border:1px solid var(--line);}
+  .xp-fill{height:100%; background:var(--cyan); transition:width .4s ease;}
+  .xp-caption{font-family:var(--mono); font-size:9px; color:var(--text-dim); margin-top:5px;}
+
   .stat-row{display:flex; gap:10px; margin-bottom:22px;}
   .stat-box{
     flex:1; background:var(--panel); border:2px solid var(--line); border-radius:10px;
@@ -63,11 +104,13 @@
 
   .boss-list{display:flex; flex-direction:column; gap:12px;}
   .boss{
-    background:var(--panel); border:2px solid var(--line); border-radius:10px; padding:14px 16px;
+    background:var(--panel); border:2px solid var(--line); border-radius:10px; padding:14px 16px; cursor:pointer;
   }
-  .boss-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:6px;}
-  .boss-name{font-family:var(--sans); font-weight:800; font-size:13.5px;}
-  .boss-sub{font-family:var(--mono); font-size:10px; color:var(--text-dim);}
+  .boss:active{border-color:var(--gold);}
+  .boss-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px; flex-wrap:wrap; gap:6px;}
+  .boss-title{font-family:var(--pixel); font-weight:400; font-size:11.5px; color:var(--text); letter-spacing:.5px;}
+  .boss-name{font-family:var(--sans); font-weight:700; font-size:11px; color:var(--text-dim);}
+  .boss-sub{font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-bottom:8px;}
   .hp-track{
     width:100%; height:16px; background:#120f1c; border-radius:8px; overflow:hidden; border:1px solid var(--line);
     margin-bottom:10px;
@@ -80,7 +123,6 @@
     font-weight:700; font-size:11.5px; padding:9px 14px; border-radius:7px; cursor:pointer; min-height:40px;
   }
   .bust-btn:active{background:var(--gold); color:#231a0a;}
-  .bust-btn:disabled{opacity:.35; border-color:var(--line); color:var(--text-dim); background:transparent;}
   .defeated-tag{font-family:var(--pixel); font-size:8.5px; color:var(--hp-green); letter-spacing:1px;}
 
   .flash{animation:flashPulse .5s ease;}
@@ -99,12 +141,92 @@
     max-width:88%; text-align:center;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ---------- Battle modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,8,16,.86); display:flex; align-items:center; justify-content:center;
+    z-index:200; padding:16px; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .modal-overlay.show{opacity:1; pointer-events:auto;}
+  .battle-modal{
+    background:var(--panel); border:2px solid var(--gold); border-radius:14px; max-width:480px; width:100%;
+    max-height:88vh; overflow-y:auto; padding:20px; position:relative;
+  }
+  .modal-close{
+    position:absolute; top:10px; right:10px; background:none; border:none; color:var(--text-dim);
+    font-family:var(--mono); font-size:18px; cursor:pointer; padding:6px 10px; line-height:1;
+  }
+  .modal-close:active{color:var(--gold);}
+
+  .battle-boss-title{font-family:var(--pixel); font-size:13px; color:var(--gold); margin-bottom:6px; padding-right:24px;}
+  .battle-boss-sub{font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-bottom:16px;}
+  .battle-hp-track{width:100%; height:14px; background:#120f1c; border-radius:7px; overflow:hidden; border:1px solid var(--line); margin-bottom:18px;}
+  .battle-hp-fill{height:100%; transition:width .4s ease;}
+
+  .flavor-text{font-family:var(--sans); font-size:13.5px; line-height:1.6; color:var(--text); margin-bottom:20px; font-style:italic;}
+  .engage-btn{
+    width:100%; background:var(--gold); color:#231a0a; border:none; border-radius:9px; font-family:var(--sans);
+    font-weight:800; font-size:13.5px; padding:14px; cursor:pointer;
+  }
+  .engage-btn:active{transform:scale(.98);}
+
+  .q-text{font-family:var(--sans); font-weight:700; font-size:14px; line-height:1.5; margin-bottom:16px;}
+  .q-options{display:flex; flex-direction:column; gap:9px;}
+  .q-opt{
+    background:var(--panel-raised); border:2px solid var(--line); border-radius:9px; color:var(--text);
+    font-family:var(--sans); font-size:12.5px; text-align:left; padding:12px 14px; cursor:pointer; min-height:44px;
+  }
+  .q-opt:active{border-color:var(--gold);}
+  .q-opt.correct{border-color:var(--hp-green); background:rgba(74,222,128,.12); color:var(--hp-green);}
+  .q-opt.incorrect{border-color:var(--hp-red); background:rgba(248,113,113,.12); color:var(--hp-red);}
+  .q-opt:disabled{cursor:default;}
+  .q-meta{font-family:var(--mono); font-size:9.5px; color:var(--text-dim); margin-top:14px; text-align:center;}
+
+  .defeat-banner{
+    font-family:var(--pixel); font-size:12px; color:var(--hp-green); text-align:center; letter-spacing:1px;
+    border:2px solid var(--hp-green); border-radius:9px; padding:14px; margin-bottom:16px; background:rgba(74,222,128,.08);
+  }
+  .briefing-head{
+    font-family:var(--pixel); font-size:10.5px; letter-spacing:.5px; margin-bottom:10px;
+  }
+  .briefing-head.hit{color:var(--hp-green);}
+  .briefing-head.miss{color:var(--hp-red);}
+  .briefing-card{
+    background:var(--panel-raised); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:18px;
+  }
+  .briefing-lede{font-family:var(--sans); font-size:12px; color:var(--text-dim); font-style:italic; margin-bottom:10px;}
+  .briefing-answer{font-family:var(--mono); font-size:11px; color:var(--gold); margin-bottom:8px;}
+  .briefing-why{font-family:var(--sans); font-size:13px; line-height:1.55;}
+  .xp-pill{
+    display:inline-block; font-family:var(--mono); font-size:10.5px; color:var(--cyan); background:rgba(0,200,255,.1);
+    border:1px solid var(--cyan); border-radius:20px; padding:4px 10px; margin-bottom:14px;
+  }
+  .continue-btn{
+    width:100%; background:var(--panel-raised); border:2px solid var(--gold); color:var(--gold); border-radius:9px;
+    font-family:var(--sans); font-weight:800; font-size:13px; padding:13px; cursor:pointer;
+  }
+  .continue-btn:active{background:var(--gold); color:#231a0a;}
 </style>
 </head>
 <body>
 <div class="frame">
   <div class="title">⚔ SEC+ BOSS BATTLE TRACKER ⚔</div>
-  <div class="subtitle">5 domains. 5 bosses. every busted trap is a hit.</div>
+  <div class="subtitle">5 domains. 5 bosses. every correct answer is a hit.</div>
+
+  <div class="char-panel">
+    <div class="avatar-wrap"><div class="avatar" id="avatar">
+      <div class="cape"></div>
+      <div class="hood"></div>
+      <div class="visor"></div>
+      <div class="badge"></div>
+    </div></div>
+    <div class="char-info">
+      <div class="char-name">AGENT DAJONI</div>
+      <div class="char-rank" id="charRank">SOC Recruit</div>
+      <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+      <div class="xp-caption" id="xpCaption"></div>
+    </div>
+  </div>
 
   <div class="stat-row">
     <div class="stat-box"><div class="num" id="xpTotal">0</div><div class="lbl">Total XP</div></div>
@@ -126,29 +248,61 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="modal-overlay" id="battleOverlay">
+  <div class="battle-modal" id="battleModal">
+    <button class="modal-close" onclick="closeBattle()">✕</button>
+    <div id="battleContent"></div>
+  </div>
+</div>
+
 <script>
 const BOSSES = [
-  {id:'d4', name:'Domain 4.0 — Security Operations', maxHp:15},
-  {id:'d2', name:'Domain 2.0 — Threats, Vulnerabilities & Mitigations', maxHp:8},
-  {id:'d3', name:'Domain 3.0 — Security Architecture', maxHp:8},
-  {id:'d5', name:'Domain 5.0 — Security Program Management', maxHp:7},
-  {id:'d1', name:'Domain 1.0 — General Security Concepts', maxHp:5},
+  {id:'d4', domain:'4.0', title:'GHOST ADMIN', domainLabel:'Domain 4.0 — Security Operations', maxHp:15,
+    flavor:"A hijacked administrator account, still carrying valid credentials. It moves through the network like it belongs there — because once, it did."},
+  {id:'d2', domain:'2.0', title:'VECTORWRAITH', domainLabel:'Domain 2.0 — Threats, Vulnerabilities & Mitigations', maxHp:8,
+    flavor:"It has no fixed form — phishing lure, rogue access point, injected packet. Name the vector before it reshapes into the next one."},
+  {id:'d3', domain:'3.0', title:'BASTION PRIME', domainLabel:'Domain 3.0 — Security Architecture', maxHp:8,
+    flavor:"A living fortress built from firewalls, zones, and redundant systems. Every wall is a design decision — find the ones that hold."},
+  {id:'d5', domain:'5.0', title:'THE AUDITOR-GENERAL', domainLabel:'Domain 5.0 — Security Program Management', maxHp:7,
+    flavor:"It carries a risk register in one hand and a compliance checklist in the other. It cannot be intimidated — only satisfied."},
+  {id:'d1', domain:'1.0', title:'ROOT WARDEN', domainLabel:'Domain 1.0 — General Security Concepts', maxHp:5,
+    flavor:"Guardian of the root of trust. Old, foundational, and unwilling to authenticate anything it doesn't recognize."},
+];
+
+const RANKS = [
+  {title:'SOC Recruit', floor:0,   next:75,  css:'rank-recruit'},
+  {title:'Analyst',     floor:75,  next:200, css:'rank-analyst'},
+  {title:'Sentinel',    floor:200, next:400, css:'rank-sentinel'},
+  {title:'Full Analyst',floor:400, next:null,css:'rank-full'},
 ];
 
 const STORAGE_KEY = 'secplus-boss-tracker-state';
+const REVIEW_XP = 2;
+const HIT_XP = 5;
 
+let questionBank = [];
 let state = {
   xp: 0,
   busted: {d4:0, d2:0, d3:0, d5:0, d1:0},
-  logDates: []
+  logDates: [],
+  metBosses: {d4:false, d2:false, d3:false, d5:false, d1:false},
+  qstats: {}
 };
+
+let battle = null; // {bossId, queue:[qid,...], pos, currentQid}
 
 function loadState(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) state = JSON.parse(raw);
+    if(raw){
+      const loaded = JSON.parse(raw);
+      state = Object.assign({}, state, loaded);
+      state.busted = Object.assign({d4:0,d2:0,d3:0,d5:0,d1:0}, loaded.busted || {});
+      state.metBosses = Object.assign({d4:false,d2:false,d3:false,d5:false,d1:false}, loaded.metBosses || {});
+      state.qstats = loaded.qstats || {};
+      state.logDates = loaded.logDates || [];
+    }
   }catch(e){ /* first run, no saved state */ }
-  render();
 }
 function saveState(){
   try{
@@ -192,21 +346,12 @@ function logAction(type){
   if(navigator.vibrate) navigator.vibrate(15);
 }
 
-function bustTrap(bossId){
-  const boss = BOSSES.find(b=>b.id===bossId);
-  if(state.busted[bossId] < boss.maxHp){
-    state.busted[bossId]++;
-    state.xp += 3;
-    saveState();
-    render(true, bossId);
-    showToast('TRAP BUSTED! +3 XP');
-    if(navigator.vibrate) navigator.vibrate([15,30,15]);
-  }
-}
-
 function resetProgress(){
   if(!confirm('Reset all XP, streak, and boss progress? This cannot be undone.')) return;
-  state = { xp:0, busted:{d4:0,d2:0,d3:0,d5:0,d1:0}, logDates:[] };
+  state = {
+    xp:0, busted:{d4:0,d2:0,d3:0,d5:0,d1:0}, logDates:[],
+    metBosses:{d4:false,d2:false,d3:false,d5:false,d1:false}, qstats:{}
+  };
   saveState();
   render();
 }
@@ -217,12 +362,32 @@ function hpColor(pct){
   return 'var(--hp-green)';
 }
 
+function getRank(xp){
+  let r = RANKS[0];
+  for(const rank of RANKS){ if(xp >= rank.floor) r = rank; }
+  return r;
+}
+
+function renderCharPanel(){
+  const rank = getRank(state.xp);
+  const avatar = document.getElementById('avatar');
+  avatar.className = 'avatar ' + rank.css;
+  document.getElementById('charRank').textContent = rank.title;
+  const fillPct = rank.next ? Math.min(100, ((state.xp - rank.floor) / (rank.next - rank.floor)) * 100) : 100;
+  document.getElementById('xpFill').style.width = fillPct + '%';
+  document.getElementById('xpCaption').textContent = rank.next
+    ? `${state.xp} / ${rank.next} XP to ${RANKS[RANKS.indexOf(rank)+1].title}`
+    : `${state.xp} XP — max rank reached`;
+}
+
 function render(flash, flashBoss){
   document.getElementById('xpTotal').textContent = state.xp;
   document.getElementById('streakNum').textContent = computeStreak();
   const totalBusted = Object.values(state.busted).reduce((a,b)=>a+b,0);
   const totalMax = BOSSES.reduce((a,b)=>a+b.maxHp,0);
   document.getElementById('bustedTotal').textContent = `${totalBusted}/${totalMax}`;
+
+  renderCharPanel();
 
   const list = document.getElementById('bossList');
   list.innerHTML = '';
@@ -234,23 +399,202 @@ function render(flash, flashBoss){
 
     const div = document.createElement('div');
     div.className = 'boss' + (flashBoss === boss.id ? ' flash' : '');
+    div.onclick = ()=>openBattle(boss.id);
     div.innerHTML = `
       <div class="boss-head">
-        <span class="boss-name">${boss.name}</span>
+        <span class="boss-title">${boss.title}</span>
         ${defeated ? '<span class="defeated-tag">DEFEATED</span>' : ''}
       </div>
+      <div class="boss-name">${boss.domainLabel}</div>
       <div class="boss-sub">${hpRemaining} / ${boss.maxHp} HP · ${Math.round((busted/boss.maxHp)*100)}% mastery</div>
       <div class="hp-track"><div class="hp-fill" style="width:${pctRemaining}%; background:${hpColor(pctRemaining)}"></div></div>
       <div class="boss-controls">
         <span class="hp-text">${busted} traps busted</span>
-        <button class="bust-btn" ${defeated?'disabled':''} onclick="bustTrap('${boss.id}')">⚡ Bust a trap</button>
+        <button class="bust-btn" onclick="event.stopPropagation(); openBattle('${boss.id}')">${defeated ? '🗡 Review' : '⚔ Battle'}</button>
       </div>
     `;
     list.appendChild(div);
   });
 }
 
-loadState();
+/* ---------- Battle mode ---------- */
+
+function qstatFor(qid, q){
+  if(!state.qstats[qid]){
+    state.qstats[qid] = { box: q.gotRightAttempt1 ? 1 : 0, streak:0, seen:0, right:0, wrong:0 };
+  }
+  return state.qstats[qid];
+}
+
+function buildQueue(bossId){
+  const boss = BOSSES.find(b=>b.id===bossId);
+  const questions = questionBank.filter(q=>q.domain===boss.domain);
+  questions.forEach(q=>qstatFor(q.id, q));
+  const sorted = [...questions].sort((a,b)=>{
+    const sa = state.qstats[a.id], sb = state.qstats[b.id];
+    if(sa.box !== sb.box) return sa.box - sb.box;
+    if(sa.seen !== sb.seen) return sa.seen - sb.seen;
+    return Math.random() - 0.5;
+  });
+  return sorted.map(q=>q.id);
+}
+
+function openBattle(bossId){
+  const boss = BOSSES.find(b=>b.id===bossId);
+  battle = { bossId, queue: [], pos: 0, shuffledOptions: null };
+  document.getElementById('battleOverlay').classList.add('show');
+  if(!state.metBosses[bossId]){
+    renderIntroScreen(boss);
+  } else {
+    startBattleQuestions(bossId);
+  }
+}
+
+function renderIntroScreen(boss){
+  const hpRemaining = boss.maxHp - state.busted[boss.id];
+  const pct = (hpRemaining / boss.maxHp) * 100;
+  document.getElementById('battleContent').innerHTML = `
+    <div class="battle-boss-title">${boss.title}</div>
+    <div class="battle-boss-sub">${boss.domainLabel}</div>
+    <div class="battle-hp-track"><div class="battle-hp-fill" style="width:${pct}%; background:${hpColor(pct)}"></div></div>
+    <div class="flavor-text">${boss.flavor}</div>
+    <button class="engage-btn" onclick="startBattleQuestions('${boss.id}')">⚔ ENGAGE</button>
+  `;
+}
+
+function startBattleQuestions(bossId){
+  state.metBosses[bossId] = true;
+  saveState();
+  battle.queue = buildQueue(bossId);
+  battle.pos = 0;
+  renderQuestionScreen();
+}
+
+function renderQuestionScreen(){
+  const boss = BOSSES.find(b=>b.id===battle.bossId);
+  if(battle.pos >= battle.queue.length){
+    battle.queue = buildQueue(battle.bossId);
+    battle.pos = 0;
+  }
+  const qid = battle.queue[battle.pos];
+  const q = questionBank.find(x=>x.id===qid);
+  battle.currentQid = qid;
+
+  const opts = [...q.options];
+  for(let i=opts.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [opts[i],opts[j]] = [opts[j],opts[i]];
+  }
+  battle.shuffledOptions = opts;
+
+  const hpRemaining = boss.maxHp - state.busted[boss.id];
+  const pct = (hpRemaining / boss.maxHp) * 100;
+  const defeated = hpRemaining <= 0;
+
+  document.getElementById('battleContent').innerHTML = `
+    <div class="battle-boss-title">${boss.title}${defeated ? ' · <span style="color:var(--hp-green)">DEFEATED</span>' : ''}</div>
+    <div class="battle-boss-sub">${boss.domainLabel} — ${hpRemaining}/${boss.maxHp} HP${defeated ? ' (review mode)' : ''}</div>
+    <div class="battle-hp-track"><div class="battle-hp-fill" style="width:${pct}%; background:${hpColor(pct)}"></div></div>
+    <div class="q-text">${q.question}</div>
+    <div class="q-options" id="qOptions">
+      ${opts.map((o,i)=>`<button class="q-opt" data-idx="${i}" onclick="answerQuestion(${i})">${o}</button>`).join('')}
+    </div>
+    <div class="q-meta">${state.qstats[qid].box >= 2 ? 'mastered · spaced review' : state.qstats[qid].box === 1 ? 'review queue' : 'priority target'}</div>
+  `;
+}
+
+function answerQuestion(idx){
+  const boss = BOSSES.find(b=>b.id===battle.bossId);
+  const q = questionBank.find(x=>x.id===battle.currentQid);
+  const chosen = battle.shuffledOptions[idx];
+  const correct = chosen === q.answer;
+  const stat = state.qstats[q.id];
+
+  document.querySelectorAll('#qOptions .q-opt').forEach(btn=>{
+    btn.disabled = true;
+    if(btn.textContent === q.answer) btn.classList.add('correct');
+    else if(btn.dataset.idx == idx && !correct) btn.classList.add('incorrect');
+  });
+
+  stat.seen++;
+  const wasDefeatedAlready = state.busted[boss.id] >= boss.maxHp;
+  let xpGain = 0;
+  let justDefeated = false;
+
+  if(correct){
+    stat.right++;
+    stat.streak++;
+    stat.box = stat.streak >= 2 ? 2 : 1;
+    if(!wasDefeatedAlready){
+      state.busted[boss.id]++;
+      xpGain = HIT_XP;
+      if(state.busted[boss.id] >= boss.maxHp) justDefeated = true;
+    } else {
+      xpGain = REVIEW_XP;
+    }
+  } else {
+    stat.wrong++;
+    stat.streak = 0;
+    stat.box = 0;
+    const requeueAt = Math.min(battle.pos + 4, battle.queue.length);
+    battle.queue.splice(requeueAt, 0, q.id);
+  }
+
+  state.xp += xpGain;
+  saveState();
+
+  setTimeout(()=>renderBriefing(q, correct, xpGain, justDefeated), 550);
+}
+
+function renderBriefing(q, correct, xpGain, justDefeated){
+  const boss = BOSSES.find(b=>b.id===battle.bossId);
+  const lede = correct
+    ? `You pierce ${boss.title}'s defenses. Recovered logs confirm:`
+    : `Your strike goes wide, but as ${boss.title} retaliates, fragments of intel spill loose:`;
+
+  document.getElementById('battleContent').innerHTML = `
+    ${justDefeated ? `<div class="defeat-banner">🏆 ${boss.title} DEFEATED</div>` : ''}
+    <div class="briefing-head ${correct ? 'hit' : 'miss'}">${correct ? '◆ HIT LANDED — INTEL EXTRACTED ◆' : '◆ MISS — INTEL LEAKED ANYWAY ◆'}</div>
+    ${xpGain > 0 ? `<div class="xp-pill">+${xpGain} XP</div>` : ''}
+    <div class="briefing-card">
+      <div class="briefing-lede">${lede}</div>
+      ${!correct ? `<div class="briefing-answer">Correct answer: ${q.answer}</div>` : ''}
+      <div class="briefing-why">${q.why}</div>
+    </div>
+    <button class="continue-btn" onclick="nextQuestion()">Continue ▶</button>
+  `;
+
+  render();
+}
+
+function nextQuestion(){
+  battle.pos++;
+  renderQuestionScreen();
+}
+
+function closeBattle(){
+  document.getElementById('battleOverlay').classList.remove('show');
+  battle = null;
+  render();
+}
+
+/* ---------- Boot ---------- */
+
+async function loadQuestionBank(){
+  try{
+    const res = await fetch('./question_bank.json');
+    questionBank = await res.json();
+  }catch(e){
+    console.error('failed to load question_bank.json', e);
+    questionBank = [];
+  }
+}
+
+(async function init(){
+  loadState();
+  await loadQuestionBank();
+  render();
+})();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
