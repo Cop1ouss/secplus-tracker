@@ -9,6 +9,29 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="shared/base.css">
 <title>Command Center — Sec+ Mission Hub</title>
+<style>
+  .cc-stat-row{display:flex; gap:10px; margin-bottom:20px;}
+  .cc-stat-box{
+    flex:1; background:var(--panel); border:2px solid var(--violet); border-radius:10px;
+    padding:14px 6px; text-align:center;
+  }
+  .cc-stat-box .num{font-family:var(--pixel); font-size:18px; color:var(--violet);}
+  .cc-stat-box .lbl{font-family:var(--mono); font-size:8.5px; color:var(--text-dim); margin-top:6px; text-transform:uppercase; letter-spacing:.3px;}
+
+  .section-lbl{font-family:var(--pixel); font-size:9.5px; color:var(--text-dim); letter-spacing:.5px; margin:20px 0 10px;}
+
+  .mastery-row{
+    background:var(--panel); border:2px solid var(--line); border-left-width:5px; border-radius:9px;
+    padding:12px 14px; margin-bottom:10px;
+  }
+  .mastery-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;}
+  .mastery-name{font-family:var(--sans); font-weight:700; font-size:12.5px;}
+  .mastery-pct{font-family:var(--mono); font-size:11px; color:var(--text-dim);}
+  .mastery-track{width:100%; height:9px; background:#120f1c; border-radius:5px; overflow:hidden; border:1px solid var(--line);}
+  .mastery-fill{height:100%; transition:width .3s ease;}
+
+  .empty-note{font-family:var(--mono); font-size:10.5px; color:var(--text-dim); text-align:center; margin:16px 0;}
+</style>
 </head>
 <body>
 <div class="frame">
@@ -16,12 +39,69 @@
   <div class="title" style="color:var(--violet)">📊 COMMAND CENTER 📊</div>
   <div class="subtitle">All your progress, one glance.</div>
 
-  <div class="stub-card" style="border-color:var(--violet)">
-    <div class="stub-icon">📊</div>
-    <div class="stub-title" style="color:var(--violet)">COMING SOON</div>
-    <div class="stub-desc">Total XP, day streak, videos watched, and per-domain mastery % for all 5 bosses — read from STORAGE_KEYS in shared/config.js, no need to open Battle Arena just to check.</div>
+  <div class="cc-stat-row">
+    <div class="cc-stat-box"><div class="num" id="ccXp">0</div><div class="lbl">Total XP</div></div>
+    <div class="cc-stat-box"><div class="num" id="ccStreak">0</div><div class="lbl">Day Streak</div></div>
+    <div class="cc-stat-box"><div class="num" id="ccVideos">0/0</div><div class="lbl">Videos</div></div>
   </div>
+
+  <div class="section-lbl">DOMAIN MASTERY</div>
+  <div id="masteryList"></div>
+  <div id="emptyNote" class="empty-note" style="display:none">No battle progress yet — head to the Battle Arena to get started.</div>
 </div>
+
 <script src="shared/config.js"></script>
+<script>
+async function loadScheduleVideos(){
+  try{
+    const res = await fetch('./data/schedule.json');
+    return await res.json();
+  }catch(e){
+    console.error('failed to load schedule.json', e);
+    return [];
+  }
+}
+
+(async function init(){
+  const gameState = loadGameStateReadOnly();
+  const scheduleState = loadScheduleStateReadOnly();
+  const videos = await loadScheduleVideos();
+
+  const xp = gameState ? gameState.xp || 0 : 0;
+  const streak = gameState ? computeStreakFromDates(gameState.logDates || []) : 0;
+  const watchedCount = scheduleState ? Object.values(scheduleState.watched || {}).filter(Boolean).length : 0;
+
+  document.getElementById('ccXp').textContent = xp;
+  document.getElementById('ccStreak').textContent = streak;
+  document.getElementById('ccVideos').textContent = `${watchedCount}/${videos.length}`;
+
+  const list = document.getElementById('masteryList');
+  if(!gameState){
+    document.getElementById('emptyNote').style.display = 'block';
+  }
+  BOSSES.forEach(boss=>{
+    const busted = gameState ? (gameState.busted && gameState.busted[boss.id]) || 0 : 0;
+    const maxHp = bossMaxHp(boss, gameState ? gameState.maxHpOverrides : null);
+    const pct = Math.round((busted / maxHp) * 100);
+    const row = document.createElement('div');
+    row.className = 'mastery-row';
+    row.style.borderLeftColor = boss.color;
+    row.innerHTML = `
+      <div class="mastery-head">
+        <span class="mastery-name">${escapeHtml(boss.name)}</span>
+        <span class="mastery-pct">${pct}% · ${busted}/${maxHp} HP</span>
+      </div>
+      <div class="mastery-track"><div class="mastery-fill" style="width:${pct}%; background:${boss.color}"></div></div>
+    `;
+    list.appendChild(row);
+  });
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
 </body>
 </html>

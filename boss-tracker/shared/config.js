@@ -52,6 +52,24 @@ function pad2(n){ return String(n).padStart(2,'0'); }
 function ymd(y,m,d){ return `${y}-${pad2(m+1)}-${pad2(d)}`; }
 function todayStr(){ const d = new Date(); return ymd(d.getFullYear(), d.getMonth(), d.getDate()); }
 
+/** Consecutive-day streak ending today, from an array of 'YYYY-MM-DD' log dates. */
+function computeStreakFromDates(logDates){
+  if(!logDates || logDates.length === 0) return 0;
+  const dates = [...new Set(logDates)].sort().reverse();
+  let streak = 0;
+  let cursor = new Date();
+  for(let i=0;i<dates.length;i++){
+    const expected = ymd(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
+    if(dates[i] === expected){
+      streak++;
+      cursor.setDate(cursor.getDate()-1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
 /** Read-only load of the game's saved state. Returns null if none saved yet. */
 function loadGameStateReadOnly(){
   try{

@@ -1,9 +1,9 @@
-const CACHE_NAME = 'secplus-boss-tracker-v5';
+const CACHE_NAME = 'secplus-boss-tracker-v6';
 const ASSETS = [
   './index.html', './game.html', './schedule.html', './socvisualizer.html', './stats.html', './traps.html',
   './shared/base.css', './shared/config.js',
   './manifest.json', './icons/icon-192.png', './icons/icon-512.png',
-  './data/question_bank.json', './data/week1_sprint.md'
+  './data/question_bank.json', './data/week1_sprint.md', './data/schedule.json'
 ];
 
 self.addEventListener('install', (event) => {

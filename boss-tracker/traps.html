@@ -9,6 +9,17 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="shared/base.css">
 <title>Trap Gauntlet — Sec+ Mission Hub</title>
+<style>
+  .trap-card{background:var(--panel); border:2px solid var(--hp-yellow); border-radius:12px; padding:16px; margin-bottom:16px;}
+  .trap-name{font-family:var(--pixel); font-size:11px; color:var(--hp-yellow); letter-spacing:.4px; margin-bottom:8px;}
+  .trap-desc{font-family:var(--sans); font-size:13px; line-height:1.6; color:var(--text); margin-bottom:14px;}
+  .trap-example{background:var(--panel-raised); border:1px solid var(--line); border-radius:9px; padding:12px 14px; margin-bottom:10px;}
+  .trap-example:last-child{margin-bottom:0;}
+  .trap-q{font-family:var(--sans); font-weight:700; font-size:12.5px; margin-bottom:8px; line-height:1.5;}
+  .trap-a{font-family:var(--mono); font-size:10.5px; color:var(--hp-yellow); margin-bottom:6px;}
+  .trap-why{font-family:var(--sans); font-size:11.5px; color:var(--text-dim); line-height:1.5;}
+  .note{font-family:var(--mono); font-size:9.5px; color:var(--text-dim); text-align:center; margin:10px 0 20px; line-height:1.6;}
+</style>
 </head>
 <body>
 <div class="frame">
@@ -16,11 +27,82 @@
   <div class="title" style="color:var(--hp-yellow)">⚠️ TRAP GAUNTLET ⚠️</div>
   <div class="subtitle">Pre-exam trap refresher.</div>
 
-  <div class="stub-card" style="border-color:var(--hp-yellow)">
-    <div class="stub-icon">⚠️</div>
-    <div class="stub-title" style="color:var(--hp-yellow)">COMING SOON</div>
-    <div class="stub-desc">A quick static reference covering the 5 common exam trap categories — sequencing traps, vocabulary confusion, negative-phrasing traps, and scenario-misread traps — with real examples pulled from data/question_bank.json.</div>
-  </div>
+  <div id="trapList"></div>
 </div>
+
+<script src="shared/config.js"></script>
+<script>
+const TRAP_CATEGORIES = [
+  {
+    name: 'Sequencing Traps',
+    desc: "The wrong answer sounds right, but breaks down once you track the actual order of events — what happened first, what happened between two other things, what phase comes before another.",
+    exampleIds: ['q75', 'q58']
+  },
+  {
+    name: 'Vocabulary Confusion',
+    desc: "Two Security+ terms sound almost interchangeable but mean something precisely different (RPO vs RTO, risk tolerance vs risk appetite). The exam leans on this constantly — read the exact word being asked about.",
+    exampleIds: ['q47', 'q79']
+  },
+  {
+    name: 'Negative-Phrasing Traps',
+    desc: 'The question asks which option is NOT true, or which is the EXCEPTION. Skimming past that one word flips the entire question — the "obviously correct" answer becomes the trap.',
+    exampleIds: ['q18']
+  },
+  {
+    name: 'Scenario-Misread Traps',
+    desc: "A long scenario buries the one detail that changes the answer — a job that requires travel, an urgent tone, a familiar-sounding job title. Missing that detail leads straight to the wrong (but plausible) choice.",
+    exampleIds: ['q1', 'q19']
+  },
+];
+
+async function loadQuestionBank(){
+  try{
+    const res = await fetch('./data/question_bank.json');
+    return await res.json();
+  }catch(e){
+    console.error('failed to load question_bank.json', e);
+    return [];
+  }
+}
+
+(async function init(){
+  const bank = await loadQuestionBank();
+  const byId = {};
+  bank.forEach(q => byId[q.id] = q);
+
+  const container = document.getElementById('trapList');
+  TRAP_CATEGORIES.forEach(cat=>{
+    const card = document.createElement('div');
+    card.className = 'trap-card';
+    const examplesHtml = cat.exampleIds.map(id=>{
+      const q = byId[id];
+      if(!q) return '';
+      return `
+        <div class="trap-example">
+          <div class="trap-q">${escapeHtml(q.question)}</div>
+          <div class="trap-a">Answer: ${escapeHtml(q.answer)}</div>
+          <div class="trap-why">${escapeHtml(q.why || '')}</div>
+        </div>`;
+    }).join('');
+    card.innerHTML = `
+      <div class="trap-name">${escapeHtml(cat.name)}</div>
+      <div class="trap-desc">${escapeHtml(cat.desc)}</div>
+      ${examplesHtml}
+    `;
+    container.appendChild(card);
+  });
+
+  const note = document.createElement('div');
+  note.className = 'note';
+  note.textContent = 'Note: your original brief said "5 trap categories" but named 4 — built with those 4 for now.';
+  container.appendChild(note);
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
 </body>
 </html>

@@ -297,23 +297,6 @@ function saveState(){
   }catch(e){ console.error('save failed', e); }
 }
 
-function computeStreak(){
-  if(state.logDates.length === 0) return 0;
-  const dates = [...new Set(state.logDates)].sort().reverse();
-  let streak = 0;
-  let cursor = new Date();
-  for(let i=0;i<dates.length;i++){
-    const expected = ymd(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
-    if(dates[i] === expected){
-      streak++;
-      cursor.setDate(cursor.getDate()-1);
-    } else {
-      break;
-    }
-  }
-  return streak;
-}
-
 function logAction(type){
   const xpGain = type === 'anki' ? 10 : 5;
   state.xp += xpGain;
@@ -393,7 +376,7 @@ function renderQuestsSection(){
 
 function render(flash, flashBoss){
   document.getElementById('xpTotal').textContent = state.xp;
-  document.getElementById('streakNum').textContent = computeStreak();
+  document.getElementById('streakNum').textContent = computeStreakFromDates(state.logDates);
   const totalBusted = Object.values(state.busted).reduce((a,b)=>a+b,0);
   const totalMax = BOSSES.reduce((a,b)=>a+bossMaxHp(b, state.maxHpOverrides),0);
   document.getElementById('bustedTotal').textContent = `${totalBusted}/${totalMax}`;

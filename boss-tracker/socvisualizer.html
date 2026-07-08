@@ -9,18 +9,318 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="shared/base.css">
 <title>SOC Simulator — Sec+ Mission Hub</title>
+<style>
+  :root{ --soc-red: #f0555c; }
+
+  .tab-row{display:flex; gap:8px; margin-bottom:16px;}
+  .tab-btn{
+    flex:1; background:var(--panel); border:2px solid var(--line); border-radius:9px; color:var(--text-dim);
+    font-family:var(--mono); font-size:10px; padding:10px 6px; cursor:pointer; text-transform:uppercase; letter-spacing:.3px;
+  }
+  .tab-btn.active{border-color:var(--soc-red); color:var(--soc-red); background:rgba(240,85,92,.08);}
+
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* ---------- Terminal ---------- */
+  .terminal-box{
+    background:#0a0d0a; border:2px solid var(--soc-red); border-radius:10px; padding:14px;
+    height:320px; overflow-y:auto; font-family:var(--mono); font-size:10.5px; line-height:1.7;
+    margin-bottom:12px;
+  }
+  .term-line{opacity:0; animation:termIn .25s ease forwards;}
+  @keyframes termIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+  .term-line .ts{color:#5a7a5a;}
+  .term-line.lvl-info{color:#7fd8a0;}
+  .term-line.lvl-warn{color:var(--hp-yellow);}
+  .term-line.lvl-crit{color:var(--soc-red); font-weight:700;}
+  .term-controls{display:flex; gap:10px;}
+  .term-btn{
+    flex:1; background:var(--panel-raised); border:1px solid var(--line); color:var(--text-dim);
+    font-family:var(--mono); font-size:10px; padding:10px; border-radius:8px; cursor:pointer;
+  }
+  .term-btn:active{border-color:var(--soc-red); color:var(--soc-red);}
+
+  /* ---------- Decoder ---------- */
+  .decoder-line{
+    display:block; width:100%; text-align:left; background:#0a0d0a; border:2px solid var(--line); border-radius:8px;
+    color:#7fd8a0; font-family:var(--mono); font-size:10px; padding:12px 14px; margin-bottom:8px; cursor:pointer;
+  }
+  .decoder-line.open{border-color:var(--soc-red);}
+  .decoder-detail{
+    background:var(--panel-raised); border:1px solid var(--line); border-radius:8px; padding:12px 14px;
+    margin:-4px 0 12px; font-family:var(--mono); font-size:10.5px; line-height:1.8;
+  }
+  .decoder-detail .field{display:flex; gap:8px; margin-bottom:4px;}
+  .decoder-detail .field-label{color:var(--text-dim); flex-shrink:0; width:80px;}
+  .decoder-detail .field-value{color:var(--text);}
+  .decoder-detail .flag{color:var(--soc-red); margin-top:8px; font-family:var(--sans); font-size:11.5px; line-height:1.5;}
+
+  /* ---------- Decision tree ---------- */
+  .tree-scenario{font-family:var(--sans); font-size:13.5px; line-height:1.6; color:var(--text); margin-bottom:18px;}
+  .tree-choices{display:flex; flex-direction:column; gap:9px;}
+  .tree-choice{
+    background:var(--panel-raised); border:2px solid var(--line); border-radius:9px; color:var(--text);
+    font-family:var(--sans); font-size:12.5px; text-align:left; padding:13px 14px; cursor:pointer;
+  }
+  .tree-choice:active{border-color:var(--soc-red);}
+  .tree-feedback-card{
+    background:var(--panel-raised); border:2px solid var(--hp-red); border-radius:10px; padding:14px 16px; margin-bottom:16px;
+  }
+  .tree-feedback-head{font-family:var(--pixel); font-size:10px; color:var(--hp-red); margin-bottom:10px; letter-spacing:.4px;}
+  .tree-feedback-body{font-family:var(--sans); font-size:12.5px; line-height:1.6;}
+  .tree-retry-btn{
+    width:100%; background:var(--panel); border:2px solid var(--hp-red); color:var(--hp-red); border-radius:9px;
+    font-family:var(--sans); font-weight:800; font-size:13px; padding:12px; cursor:pointer; margin-top:14px;
+  }
+  .tree-success-card{
+    background:rgba(74,222,128,.08); border:2px solid var(--hp-green); border-radius:12px; padding:18px; text-align:center;
+  }
+  .tree-success-title{font-family:var(--pixel); font-size:12px; color:var(--hp-green); margin-bottom:12px; letter-spacing:.5px;}
+  .tree-success-body{font-family:var(--sans); font-size:13px; line-height:1.6; color:var(--text); margin-bottom:16px; text-align:left;}
+  .tree-replay-btn{
+    width:100%; background:var(--hp-green); color:#0a1a0f; border:none; border-radius:9px;
+    font-family:var(--sans); font-weight:800; font-size:13px; padding:13px; cursor:pointer;
+  }
+  .tree-progress{font-family:var(--mono); font-size:9.5px; color:var(--text-dim); margin-bottom:10px; text-align:center;}
+</style>
 </head>
 <body>
 <div class="frame">
   <a class="hub-link" href="index.html">← Hub</a>
-  <div class="title" style="color:#f0555c">🖥️ SOC SIMULATOR 🖥️</div>
+  <div class="title" style="color:var(--soc-red)">🖥️ SOC SIMULATOR 🖥️</div>
   <div class="subtitle">GHOST ADMIN field training — Domain 4.</div>
 
-  <div class="stub-card" style="border-color:#f0555c">
-    <div class="stub-icon">🖥️</div>
-    <div class="stub-title" style="color:#f0555c">COMING SOON</div>
-    <div class="stub-desc">An interactive incident response decision tree with a terminal log stream, log line decoder, and quiz mode — themed around GHOST ADMIN and Domain 4 Security Operations.</div>
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab="terminal" onclick="switchTab('terminal')">📟 Terminal</button>
+    <button class="tab-btn" data-tab="decoder" onclick="switchTab('decoder')">🔍 Decoder</button>
+    <button class="tab-btn" data-tab="tree" onclick="switchTab('tree')">🌳 Decision Tree</button>
+  </div>
+
+  <div class="tab-panel active" id="panel-terminal">
+    <div class="terminal-box" id="terminalBox"></div>
+    <div class="term-controls">
+      <button class="term-btn" onclick="restartTerminal()">↻ REPLAY FEED</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panel-decoder">
+    <div id="decoderList"></div>
+  </div>
+
+  <div class="tab-panel" id="panel-tree">
+    <div id="treeContent"></div>
   </div>
 </div>
+
+<script src="shared/config.js"></script>
+<script>
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
+}
+
+/* ---------- Terminal log stream ---------- */
+
+const LOG_FEED = [
+  {ts:'09:14:02', lvl:'info', text:'INFO  host=WEB03 svc=nginx msg="normal traffic baseline"'},
+  {ts:'09:14:05', lvl:'warn', text:'AUTH_FAIL user=svc_backup src=185.220.101.4 attempts=3'},
+  {ts:'09:14:09', lvl:'warn', text:'AUTH_FAIL user=svc_backup src=185.220.101.4 attempts=7'},
+  {ts:'09:14:12', lvl:'warn', text:'AUTH_OK   user=svc_backup src=185.220.101.4'},
+  {ts:'09:14:15', lvl:'warn', text:'WARN  msg="login outside normal service window"'},
+  {ts:'09:14:22', lvl:'crit', text:'PRIV_ESC user=svc_backup granted=Domain_Admin approver=NONE'},
+  {ts:'09:14:31', lvl:'crit', text:'NEW_PROC host=DC01 proc=powershell.exe parent=svc_backup.exe flags=-enc'},
+  {ts:'09:14:40', lvl:'crit', text:'NET_CONN host=DC01 dst=185.220.101.4:4444 proto=TCP'},
+  {ts:'09:14:52', lvl:'crit', text:'FILE_MOD path=C:\\Windows\\NTDS\\ntds.dit action=read_attempt'},
+  {ts:'09:15:03', lvl:'crit', text:'CRITICAL msg="possible credential dumping detected"'},
+  {ts:'09:15:10', lvl:'crit', text:'ALERT soc_analyst=you msg="GHOST ADMIN pattern match — escalate now"'},
+];
+
+let termTimer = null;
+
+function restartTerminal(){
+  clearTimeout(termTimer);
+  const box = document.getElementById('terminalBox');
+  box.innerHTML = '';
+  let i = 0;
+  function next(){
+    if(i >= LOG_FEED.length) return;
+    const entry = LOG_FEED[i];
+    const line = document.createElement('div');
+    line.className = `term-line lvl-${entry.lvl}`;
+    line.innerHTML = `<span class="ts">[${entry.ts}]</span> ${escapeHtml(entry.text)}`;
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
+    i++;
+    termTimer = setTimeout(next, 750);
+  }
+  next();
+}
+
+/* ---------- Log line decoder ---------- */
+
+const DECODABLE_LINES = [
+  {
+    raw: '[09:14:12] AUTH_OK user=svc_backup src=185.220.101.4',
+    fields: [
+      {label:'TIMESTAMP', value:'09:14:12'},
+      {label:'EVENT', value:'AUTH_OK — a login succeeded'},
+      {label:'USER', value:'svc_backup — a service account, not a person'},
+      {label:'SOURCE IP', value:'185.220.101.4 — external, unfamiliar'},
+    ],
+    flag: '🚩 A service account logging in successfully from an external IP, right after 7 failed attempts, is a credential-stuffing pattern that just worked.'
+  },
+  {
+    raw: '[09:14:22] PRIV_ESC user=svc_backup granted=Domain_Admin approver=NONE',
+    fields: [
+      {label:'TIMESTAMP', value:'09:14:22'},
+      {label:'EVENT', value:'PRIV_ESC — a privilege escalation occurred'},
+      {label:'USER', value:'svc_backup'},
+      {label:'GRANTED', value:'Domain_Admin — the highest tier of access in the domain'},
+      {label:'APPROVER', value:'NONE'},
+    ],
+    flag: '🚩 No approval logged for a Domain Admin grant is the single biggest red flag in this whole feed — this bypassed change control entirely.'
+  },
+  {
+    raw: '[09:14:31] NEW_PROC host=DC01 proc=powershell.exe parent=svc_backup.exe flags=-enc',
+    fields: [
+      {label:'TIMESTAMP', value:'09:14:31'},
+      {label:'EVENT', value:'NEW_PROC — a new process started'},
+      {label:'HOST', value:'DC01 — a domain controller'},
+      {label:'PROCESS', value:'powershell.exe'},
+      {label:'FLAGS', value:'-enc — base64-encoded command'},
+    ],
+    flag: '🚩 Encoded PowerShell is a classic obfuscation technique — the attacker doesn\'t want the actual command visible in logs.'
+  },
+  {
+    raw: '[09:14:52] FILE_MOD path=C:\\Windows\\NTDS\\ntds.dit action=read_attempt',
+    fields: [
+      {label:'TIMESTAMP', value:'09:14:52'},
+      {label:'EVENT', value:'FILE_MOD — file access attempt'},
+      {label:'PATH', value:'NTDS.dit — the domain\'s entire password database'},
+      {label:'ACTION', value:'read_attempt'},
+    ],
+    flag: '🚩 A read attempt on ntds.dit means the scope of compromise may be the ENTIRE domain\'s credentials, not just one account.'
+  },
+];
+
+function renderDecoder(){
+  const list = document.getElementById('decoderList');
+  list.innerHTML = '';
+  DECODABLE_LINES.forEach((entry, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'decoder-line';
+    btn.textContent = entry.raw;
+    btn.onclick = () => toggleDecoderLine(idx);
+    list.appendChild(btn);
+
+    const detail = document.createElement('div');
+    detail.id = `decoder-detail-${idx}`;
+    detail.className = 'decoder-detail';
+    detail.style.display = 'none';
+    detail.innerHTML = entry.fields.map(f =>
+      `<div class="field"><span class="field-label">${escapeHtml(f.label)}</span><span class="field-value">${escapeHtml(f.value)}</span></div>`
+    ).join('') + `<div class="flag">${escapeHtml(entry.flag)}</div>`;
+    list.appendChild(detail);
+  });
+}
+
+function toggleDecoderLine(idx){
+  const detail = document.getElementById(`decoder-detail-${idx}`);
+  const btn = document.querySelectorAll('.decoder-line')[idx];
+  const opening = detail.style.display === 'none';
+  detail.style.display = opening ? 'block' : 'none';
+  btn.classList.toggle('open', opening);
+}
+
+/* ---------- Decision tree ---------- */
+
+const TREE_NODES = {
+  start: {
+    progress: '1 / 3',
+    scenario: "GHOST ADMIN INCIDENT — T+0:00. Your SIEM fires an alert: the svc_backup service account just logged in successfully after 7 failed attempts from an unfamiliar external IP, then was immediately granted Domain Admin with no approval on record. What's your FIRST move?",
+    choices: [
+      {label:'Isolate the account: disable svc_backup and force a credential reset', next:'node2'},
+      {label:'Wait and monitor — it might be a false positive', feedback:"Waiting costs time you don't have. The account is being actively used maliciously right now — every minute it stays active increases how much damage gets done and how hard it is to reconstruct later. Contain first, investigate the full picture second."},
+    ]
+  },
+  node2: {
+    progress: '2 / 3',
+    scenario: "Good call — svc_backup is disabled. Your log stream shows a PowerShell process (encoded command) was spawned by svc_backup on DC01 just before you acted, and it opened an outbound connection to the same external IP on port 4444. What's your NEXT move?",
+    choices: [
+      {label:'Isolate DC01 from the network immediately, preserve memory for forensics', next:'node3'},
+      {label:"Just kill the malicious PowerShell process and move on", feedback:"Killing the process alone doesn't sever the network channel, and it may destroy volatile evidence you need for forensics. The host itself needs to be isolated, not just the one process you happened to spot."},
+    ]
+  },
+  node3: {
+    progress: '3 / 3',
+    scenario: "DC01 is isolated. A file-modification log shows a read attempt on ntds.dit — the domain's entire password database — around the same time as the encoded PowerShell activity. Given that, what's the right next step?",
+    choices: [
+      {label:'Treat this as a suspected full domain-credential compromise: begin a domain-wide password reset and notify incident command', next:'success'},
+      {label:"Reset only svc_backup's password since that's the account you actually saw compromised", feedback:"If ntds.dit was read, every credential in the domain has to be treated as potentially exposed — not just the one account you happened to notice first. Scoping too narrowly here leaves the door open for the attacker to come back in on a different account."},
+    ]
+  },
+};
+
+let currentNodeId = 'start';
+
+function renderTreeNode(nodeId){
+  currentNodeId = nodeId;
+  const node = TREE_NODES[nodeId];
+  const container = document.getElementById('treeContent');
+  container.innerHTML = `
+    <div class="tree-progress">STEP ${node.progress}</div>
+    <div class="tree-scenario">${escapeHtml(node.scenario)}</div>
+    <div class="tree-choices">
+      ${node.choices.map((c,i) => `<button class="tree-choice" onclick="chooseTreeOption('${nodeId}', ${i})">${escapeHtml(c.label)}</button>`).join('')}
+    </div>
+  `;
+}
+
+function chooseTreeOption(nodeId, choiceIdx){
+  const choice = TREE_NODES[nodeId].choices[choiceIdx];
+  if(choice.next === 'success'){
+    renderTreeSuccess();
+  } else if(choice.next){
+    renderTreeNode(choice.next);
+  } else {
+    renderTreeFeedback(nodeId, choice.feedback);
+  }
+}
+
+function renderTreeFeedback(nodeId, feedback){
+  const container = document.getElementById('treeContent');
+  container.innerHTML = `
+    <div class="tree-feedback-card">
+      <div class="tree-feedback-head">◆ NOT QUITE ◆</div>
+      <div class="tree-feedback-body">${escapeHtml(feedback)}</div>
+      <button class="tree-retry-btn" onclick="renderTreeNode('${nodeId}')">Try Again ▶</button>
+    </div>
+  `;
+}
+
+function renderTreeSuccess(){
+  const container = document.getElementById('treeContent');
+  container.innerHTML = `
+    <div class="tree-success-card">
+      <div class="tree-success-title">🏆 INCIDENT CONTAINED</div>
+      <div class="tree-success-body">GHOST ADMIN neutralized. You isolated the compromised account fast, cut network access before further lateral movement, and correctly scoped the blast radius to the whole domain instead of just the account you first noticed.<br><br>That's the instinct Domain 4 incident response questions are testing: contain first, scope broadly, verify before declaring victory.</div>
+      <button class="tree-replay-btn" onclick="renderTreeNode('start')">↻ Replay Scenario</button>
+    </div>
+  `;
+}
+
+/* ---------- Boot ---------- */
+
+restartTerminal();
+renderDecoder();
+renderTreeNode('start');
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
 </body>
 </html>
