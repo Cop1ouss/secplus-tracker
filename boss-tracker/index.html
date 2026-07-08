@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sec+ Bosses">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="shared.css">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="shared/base.css">
 <title>Sec+ Mission Hub</title>
 <style>
   .countdown-row{display:flex; gap:10px; margin-bottom:22px;}
@@ -33,27 +33,27 @@
 
   <div class="section-lbl">MISSIONS</div>
   <div class="card-grid">
-    <a class="hub-card" href="game.html" style="--card-accent:var(--gold); border-left-color:var(--gold);">
+    <a class="hub-card" data-accent="gold" href="game.html">
       <span class="hub-card-icon">⚔️</span>
       <div class="hub-card-title">Battle Arena</div>
       <div class="hub-card-desc">Fight the 5 domain bosses with quiz battles. XP, ranks, daily missions.</div>
     </a>
-    <a class="hub-card" href="schedule.html" style="--card-accent:var(--cyan); border-left-color:var(--cyan);">
+    <a class="hub-card" data-accent="cyan" href="schedule.html">
       <span class="hub-card-icon">📺</span>
       <div class="hub-card-title">Watch Schedule</div>
       <div class="hub-card-desc">Track your course video progress.</div>
     </a>
-    <a class="hub-card" href="socvisualizer.html" style="--card-accent:var(--dom-4); border-left-color:var(--dom-4);">
+    <a class="hub-card" data-accent="boss:d4" href="socvisualizer.html">
       <span class="hub-card-icon">🖥️</span>
       <div class="hub-card-title">SOC Simulator</div>
       <div class="hub-card-desc">Incident response decision tree &amp; log analysis. GHOST ADMIN field training.</div>
     </a>
-    <a class="hub-card" href="stats.html" style="--card-accent:var(--violet); border-left-color:var(--violet);">
+    <a class="hub-card" data-accent="violet" href="stats.html">
       <span class="hub-card-icon">📊</span>
       <div class="hub-card-title">Command Center</div>
       <div class="hub-card-desc">All your progress in one glance — XP, streak, videos, domain mastery.</div>
     </a>
-    <a class="hub-card" href="traps.html" style="--card-accent:var(--hp-yellow); border-left-color:var(--hp-yellow);">
+    <a class="hub-card" data-accent="yellow" href="traps.html">
       <span class="hub-card-icon">⚠️</span>
       <div class="hub-card-title">Trap Gauntlet</div>
       <div class="hub-card-desc">Quick pre-exam refresher on the 5 common trap categories.</div>
@@ -61,7 +61,7 @@
   </div>
 </div>
 
-<script src="shared.js"></script>
+<script src="shared/config.js"></script>
 <script>
 function daysUntil(y, m, d){
   const now = new Date();
@@ -92,7 +92,28 @@ function renderCountdowns(){
     countdownTile(jobDays, 'LEHMAN START', 'Jul 20, 2026');
 }
 
+/* Card accents pull from shared/config.js so they can never drift from the
+   actual boss colors — "boss:<id>" resolves to that boss's live color. */
+const NAMED_ACCENTS = { gold:'#f5c451', cyan:'#00c8ff', violet:'#c084fc', yellow:'#facc15' };
+
+function resolveAccent(token){
+  if(token.startsWith('boss:')){
+    const boss = BOSSES.find(b=>b.id === token.slice(5));
+    return boss ? boss.color : NAMED_ACCENTS.gold;
+  }
+  return NAMED_ACCENTS[token] || NAMED_ACCENTS.gold;
+}
+
+function applyCardAccents(){
+  document.querySelectorAll('.hub-card[data-accent]').forEach(card=>{
+    const color = resolveAccent(card.dataset.accent);
+    card.style.borderLeftColor = color;
+    card.style.setProperty('--card-accent', color);
+  });
+}
+
 renderCountdowns();
+applyCardAccents();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{

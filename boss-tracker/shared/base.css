@@ -16,13 +16,6 @@
   --pixel:'Press Start 2P', monospace;
   --mono:'JetBrains Mono', monospace;
   --sans:'Inter', sans-serif;
-
-  /* domain identity colors */
-  --dom-4:var(--hp-red);
-  --dom-2:var(--violet);
-  --dom-3:var(--cyan);
-  --dom-5:var(--gold);
-  --dom-1:var(--hp-green);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{height:100%;}

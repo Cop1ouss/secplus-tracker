@@ -1,20 +1,23 @@
-/* Shared constants + pure helpers used across the boss-tracker hub pages. */
-
-const GAME_STORAGE_KEY = 'secplus-boss-tracker-state';
-const SCHEDULE_STORAGE_KEY = 'secplus-watch-schedule-v1';
+/* Single source of truth for boss data, storage keys, and shared helpers.
+   Loaded as a plain script tag before each page's own script — no bundler. */
 
 const BOSSES = [
-  {id:'d4', domain:'4.0', title:'GHOST ADMIN', domainLabel:'Domain 4.0 — Security Operations', maxHp:15, color:'var(--dom-4)',
+  {id:'d4', name:'GHOST ADMIN', domain:'4.0', domainLabel:'Domain 4.0 — Security Operations', maxHp:15, color:'#f0555c',
     flavor:"A hijacked administrator account, still carrying valid credentials. It moves through the network like it belongs there — because once, it did."},
-  {id:'d2', domain:'2.0', title:'VECTORWRAITH', domainLabel:'Domain 2.0 — Threats, Vulnerabilities & Mitigations', maxHp:8, color:'var(--dom-2)',
+  {id:'d2', name:'VECTORWRAITH', domain:'2.0', domainLabel:'Domain 2.0 — Threats, Vulnerabilities & Mitigations', maxHp:8, color:'#a879f5',
     flavor:"It has no fixed form — phishing lure, rogue access point, injected packet. Name the vector before it reshapes into the next one."},
-  {id:'d3', domain:'3.0', title:'BASTION PRIME', domainLabel:'Domain 3.0 — Security Architecture', maxHp:8, color:'var(--dom-3)',
+  {id:'d3', name:'BASTION PRIME', domain:'3.0', domainLabel:'Domain 3.0 — Security Architecture', maxHp:8, color:'#5b9dd9',
     flavor:"A living fortress built from firewalls, zones, and redundant systems. Every wall is a design decision — find the ones that hold."},
-  {id:'d5', domain:'5.0', title:'THE AUDITOR-GENERAL', domainLabel:'Domain 5.0 — Security Program Management', maxHp:7, color:'var(--dom-5)',
+  {id:'d5', name:'THE AUDITOR-GENERAL', domain:'5.0', domainLabel:'Domain 5.0 — Security Program Management', maxHp:7, color:'#f0b64c',
     flavor:"It carries a risk register in one hand and a compliance checklist in the other. It cannot be intimidated — only satisfied."},
-  {id:'d1', domain:'1.0', title:'ROOT WARDEN', domainLabel:'Domain 1.0 — General Security Concepts', maxHp:5, color:'var(--dom-1)',
+  {id:'d1', name:'ROOT WARDEN', domain:'1.0', domainLabel:'Domain 1.0 — General Security Concepts', maxHp:5, color:'#2dd4c8',
     flavor:"Guardian of the root of trust. Old, foundational, and unwilling to authenticate anything it doesn't recognize."},
 ];
+
+const STORAGE_KEYS = {
+  game: 'secplus-boss-tracker-state',
+  schedule: 'secplus-watch-schedule-v1',
+};
 
 const RANKS = [
   {title:'SOC Recruit', floor:0,   next:75,  css:'rank-recruit'},
@@ -52,7 +55,7 @@ function todayStr(){ const d = new Date(); return ymd(d.getFullYear(), d.getMont
 /** Read-only load of the game's saved state. Returns null if none saved yet. */
 function loadGameStateReadOnly(){
   try{
-    const raw = localStorage.getItem(GAME_STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEYS.game);
     return raw ? JSON.parse(raw) : null;
   }catch(e){ return null; }
 }
@@ -60,7 +63,7 @@ function loadGameStateReadOnly(){
 /** Read-only load of the watch-schedule state. Returns null if none saved yet. */
 function loadScheduleStateReadOnly(){
   try{
-    const raw = localStorage.getItem(SCHEDULE_STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEYS.schedule);
     return raw ? JSON.parse(raw) : null;
   }catch(e){ return null; }
 }

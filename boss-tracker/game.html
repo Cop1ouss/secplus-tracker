@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sec+ Bosses">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="shared.css">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="shared/base.css">
 <title>Battle Arena — Sec+ Boss Battle Tracker</title>
 <style>
   /* ---------- Character panel ---------- */
@@ -92,7 +92,8 @@
 
   .boss-list{display:flex; flex-direction:column; gap:12px;}
   .boss{
-    background:var(--panel); border:2px solid var(--line); border-radius:10px; padding:14px 16px; cursor:pointer;
+    background:var(--panel); border:2px solid var(--line); border-left-width:5px; border-radius:10px;
+    padding:14px 16px; cursor:pointer;
   }
   .boss:active{border-color:var(--gold);}
   .boss-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px; flex-wrap:wrap; gap:6px;}
@@ -249,7 +250,7 @@
   </div>
 </div>
 
-<script src="shared.js"></script>
+<script src="shared/config.js"></script>
 <script>
 const REVIEW_XP = 2;
 const HIT_XP = 5;
@@ -275,7 +276,7 @@ let battle = null; // {bossId, queue:[qid,...], pos, currentQid, shuffledOptions
 
 function loadState(){
   try{
-    const raw = localStorage.getItem(GAME_STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEYS.game);
     if(raw){
       const loaded = JSON.parse(raw);
       state = Object.assign({}, state, loaded);
@@ -292,7 +293,7 @@ function loadState(){
 }
 function saveState(){
   try{
-    localStorage.setItem(GAME_STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEYS.game, JSON.stringify(state));
   }catch(e){ console.error('save failed', e); }
 }
 
@@ -363,13 +364,13 @@ function renderQuestsSection(){
     const engaged = engagementForQuest(todayQuest);
     const done = !!state.completedQuests[todayQuest.dateStr];
     const pct = Math.min(100, (engaged/todayQuest.threshold)*100);
-    const bossTitles = todayQuest.targetBosses.map(bid=>BOSSES.find(b=>b.id===bid).title).join(' + ');
+    const bossNames = todayQuest.targetBosses.map(bid=>BOSSES.find(b=>b.id===bid).name).join(' + ');
     heroHtml = `
       <div class="mission-card ${done?'done':''}">
         <div class="mission-label">${done ? "✅ TODAY'S MISSION — COMPLETE" : "🎯 TODAY'S MISSION"}</div>
         <div class="mission-title">${escapeHtml(todayQuest.label)}</div>
         ${todayQuest.topics.length ? `<div class="mission-topics">Focus: ${escapeHtml(todayQuest.topics.join(', '))}</div>` : ''}
-        <div class="mission-target">Target: ${escapeHtml(bossTitles)}</div>
+        <div class="mission-target">Target: ${escapeHtml(bossNames)}</div>
         <div class="mission-track"><div class="mission-fill" style="width:${pct}%"></div></div>
         <div class="mission-caption">${Math.min(engaged,todayQuest.threshold)} / ${todayQuest.threshold} questions engaged</div>
       </div>`;
@@ -411,10 +412,11 @@ function render(flash, flashBoss){
 
     const div = document.createElement('div');
     div.className = 'boss' + (flashBoss === boss.id ? ' flash' : '');
+    div.style.borderLeftColor = boss.color;
     div.onclick = ()=>openBattle(boss.id);
     div.innerHTML = `
       <div class="boss-head">
-        <span class="boss-title">${boss.title}</span>
+        <span class="boss-title">${boss.name}</span>
         ${defeated ? '<span class="defeated-tag">DEFEATED</span>' : ''}
       </div>
       <div class="boss-name">${boss.domainLabel}</div>
@@ -467,7 +469,7 @@ function renderIntroScreen(boss){
   const hpRemaining = maxHp - state.busted[boss.id];
   const pct = (hpRemaining / maxHp) * 100;
   document.getElementById('battleContent').innerHTML = `
-    <div class="battle-boss-title">${boss.title}</div>
+    <div class="battle-boss-title">${boss.name}</div>
     <div class="battle-boss-sub">${boss.domainLabel}</div>
     <div class="battle-hp-track"><div class="battle-hp-fill" style="width:${pct}%; background:${hpColor(pct)}"></div></div>
     <div class="flavor-text">${boss.flavor}</div>
@@ -487,7 +489,7 @@ function renderQuestionScreen(){
   const boss = BOSSES.find(b=>b.id===battle.bossId);
   if(battle.queue.length === 0){
     document.getElementById('battleContent').innerHTML = `
-      <div class="battle-boss-title">${boss.title}</div>
+      <div class="battle-boss-title">${boss.name}</div>
       <div class="flavor-text">No questions loaded for this domain yet.</div>
     `;
     return;
@@ -513,7 +515,7 @@ function renderQuestionScreen(){
   const defeated = hpRemaining <= 0;
 
   document.getElementById('battleContent').innerHTML = `
-    <div class="battle-boss-title">${boss.title}${defeated ? ' · <span style="color:var(--hp-green)">DEFEATED</span>' : ''}</div>
+    <div class="battle-boss-title">${boss.name}${defeated ? ' · <span style="color:var(--hp-green)">DEFEATED</span>' : ''}</div>
     <div class="battle-boss-sub">${boss.domainLabel} — ${hpRemaining}/${maxHp} HP${defeated ? ' (review mode)' : ''}</div>
     <div class="battle-hp-track"><div class="battle-hp-fill" style="width:${pct}%; background:${hpColor(pct)}"></div></div>
     <div class="q-text">${escapeHtml(q.question)}</div>
@@ -590,11 +592,11 @@ function checkQuestCompletion(dateStr){
 function renderBriefing(q, correct, xpGain, justDefeated, completedQuest){
   const boss = BOSSES.find(b=>b.id===battle.bossId);
   const lede = correct
-    ? `You pierce ${boss.title}'s defenses. Recovered logs confirm:`
-    : `Your strike goes wide, but as ${boss.title} retaliates, fragments of intel spill loose:`;
+    ? `You pierce ${boss.name}'s defenses. Recovered logs confirm:`
+    : `Your strike goes wide, but as ${boss.name} retaliates, fragments of intel spill loose:`;
 
   document.getElementById('battleContent').innerHTML = `
-    ${justDefeated ? `<div class="defeat-banner">🏆 ${boss.title} DEFEATED</div>` : ''}
+    ${justDefeated ? `<div class="defeat-banner">🏆 ${boss.name} DEFEATED</div>` : ''}
     ${completedQuest ? `<div class="quest-banner">🎯 MISSION COMPLETE<br>"${escapeHtml(completedQuest.label)}" (+${QUEST_BONUS_XP} XP)</div>` : ''}
     <div class="briefing-head ${correct ? 'hit' : 'miss'}">${correct ? '◆ HIT LANDED — INTEL EXTRACTED ◆' : '◆ MISS — INTEL LEAKED ANYWAY ◆'}</div>
     ${xpGain > 0 ? `<div class="xp-pill">+${xpGain} XP</div>` : ''}
@@ -652,7 +654,7 @@ function parseQuests(mdText){
 
 async function loadQuests(){
   try{
-    const res = await fetch('./week1_sprint.md');
+    const res = await fetch('./data/week1_sprint.md');
     const text = await res.text();
     QUESTS = parseQuests(text);
   }catch(e){
@@ -768,7 +770,7 @@ function handleImportFile(event){
 
 async function loadQuestionBank(){
   try{
-    const res = await fetch('./question_bank.json');
+    const res = await fetch('./data/question_bank.json');
     baseQuestionBank = await res.json();
   }catch(e){
     console.error('failed to load question_bank.json', e);
