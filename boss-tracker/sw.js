@@ -1,4 +1,4 @@
-const CACHE_NAME = 'secplus-boss-tracker-v6';
+const CACHE_NAME = 'secplus-boss-tracker-v7';
 const ASSETS = [
   './index.html', './game.html', './schedule.html', './socvisualizer.html', './stats.html', './traps.html',
   './shared/base.css', './shared/config.js',

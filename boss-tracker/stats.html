@@ -52,20 +52,21 @@
 
 <script src="shared/config.js"></script>
 <script>
-async function loadScheduleVideos(){
+async function loadScheduleVideoCount(){
   try{
     const res = await fetch('./data/schedule.json');
-    return await res.json();
+    const schedule = await res.json();
+    return Object.values(schedule).reduce((sum, dayVideos) => sum + dayVideos.length, 0);
   }catch(e){
     console.error('failed to load schedule.json', e);
-    return [];
+    return 0;
   }
 }
 
 (async function init(){
   const gameState = loadGameStateReadOnly();
   const scheduleState = loadScheduleStateReadOnly();
-  const videos = await loadScheduleVideos();
+  const totalVideos = await loadScheduleVideoCount();
 
   const xp = gameState ? gameState.xp || 0 : 0;
   const streak = gameState ? computeStreakFromDates(gameState.logDates || []) : 0;
@@ -73,7 +74,7 @@ async function loadScheduleVideos(){
 
   document.getElementById('ccXp').textContent = xp;
   document.getElementById('ccStreak').textContent = streak;
-  document.getElementById('ccVideos').textContent = `${watchedCount}/${videos.length}`;
+  document.getElementById('ccVideos').textContent = `${watchedCount}/${totalVideos}`;
 
   const list = document.getElementById('masteryList');
   if(!gameState){

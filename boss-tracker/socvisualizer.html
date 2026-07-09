@@ -10,111 +10,176 @@
 <link rel="stylesheet" href="shared/base.css">
 <title>SOC Simulator — Sec+ Mission Hub</title>
 <style>
-  :root{ --soc-red: #f0555c; }
-
   .tab-row{display:flex; gap:8px; margin-bottom:16px;}
   .tab-btn{
     flex:1; background:var(--panel); border:2px solid var(--line); border-radius:9px; color:var(--text-dim);
     font-family:var(--mono); font-size:10px; padding:10px 6px; cursor:pointer; text-transform:uppercase; letter-spacing:.3px;
   }
-  .tab-btn.active{border-color:var(--soc-red); color:var(--soc-red); background:rgba(240,85,92,.08);}
-
+  .tab-btn.active{border-color:var(--soc-accent); color:var(--soc-accent); background:var(--soc-accent-fade);}
   .tab-panel{display:none;}
   .tab-panel.active{display:block;}
 
+  .scenario-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:9px; padding:12px 14px; margin-bottom:16px;
+    font-family:var(--mono); font-size:10.5px; color:var(--text-dim); line-height:1.6;
+  }
+  .scenario-card b{color:var(--text);}
+
   /* ---------- Terminal ---------- */
   .terminal-box{
-    background:#0a0d0a; border:2px solid var(--soc-red); border-radius:10px; padding:14px;
-    height:320px; overflow-y:auto; font-family:var(--mono); font-size:10.5px; line-height:1.7;
+    background:#0a0d0a; border:2px solid var(--soc-accent); border-radius:10px; padding:14px;
+    height:280px; overflow-y:auto; font-family:var(--mono); font-size:10px; line-height:1.7;
     margin-bottom:12px;
   }
-  .term-line{opacity:0; animation:termIn .25s ease forwards;}
+  .term-line{opacity:0; animation:termIn .2s ease forwards;}
   @keyframes termIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
-  .term-line .ts{color:#5a7a5a;}
-  .term-line.lvl-info{color:#7fd8a0;}
+  .term-line .ts{color:#4a6a4a;}
+  .term-line.lvl-ok{color:#7fd8a0;}
+  .term-line.lvl-info{color:var(--cyan);}
   .term-line.lvl-warn{color:var(--hp-yellow);}
-  .term-line.lvl-crit{color:var(--soc-red); font-weight:700;}
-  .term-controls{display:flex; gap:10px;}
+  .term-line.lvl-crit{color:var(--soc-accent); font-weight:700;}
   .term-btn{
-    flex:1; background:var(--panel-raised); border:1px solid var(--line); color:var(--text-dim);
-    font-family:var(--mono); font-size:10px; padding:10px; border-radius:8px; cursor:pointer;
+    width:100%; background:var(--panel-raised); border:1px solid var(--line); color:var(--text-dim);
+    font-family:var(--mono); font-size:10px; padding:10px; border-radius:8px; cursor:pointer; margin-bottom:22px;
   }
-  .term-btn:active{border-color:var(--soc-red); color:var(--soc-red);}
+  .term-btn:active{border-color:var(--soc-accent); color:var(--soc-accent);}
 
-  /* ---------- Decoder ---------- */
-  .decoder-line{
-    display:block; width:100%; text-align:left; background:#0a0d0a; border:2px solid var(--line); border-radius:8px;
-    color:#7fd8a0; font-family:var(--mono); font-size:10px; padding:12px 14px; margin-bottom:8px; cursor:pointer;
+  /* ---------- Flowchart ---------- */
+  .flow-arrow{text-align:center; color:var(--text-dim); font-family:var(--mono); font-size:14px; margin:2px 0 8px;}
+  .flow-node{
+    background:var(--panel); border:2px solid var(--line); border-radius:9px; padding:12px 14px;
+    margin-bottom:8px; cursor:pointer;
   }
-  .decoder-line.open{border-color:var(--soc-red);}
-  .decoder-detail{
-    background:var(--panel-raised); border:1px solid var(--line); border-radius:8px; padding:12px 14px;
-    margin:-4px 0 12px; font-family:var(--mono); font-size:10.5px; line-height:1.8;
-  }
-  .decoder-detail .field{display:flex; gap:8px; margin-bottom:4px;}
-  .decoder-detail .field-label{color:var(--text-dim); flex-shrink:0; width:80px;}
-  .decoder-detail .field-value{color:var(--text);}
-  .decoder-detail .flag{color:var(--soc-red); margin-top:8px; font-family:var(--sans); font-size:11.5px; line-height:1.5;}
+  .flow-node:active, .flow-node.selected{border-color:var(--soc-accent);}
+  .flow-node.selected{background:var(--soc-accent-fade);}
+  .flow-node-label{font-family:var(--sans); font-weight:700; font-size:12.5px;}
+  .flow-node-sub{font-family:var(--mono); font-size:9.5px; color:var(--text-dim); margin-top:3px;}
 
-  /* ---------- Decision tree ---------- */
-  .tree-scenario{font-family:var(--sans); font-size:13.5px; line-height:1.6; color:var(--text); margin-bottom:18px;}
-  .tree-choices{display:flex; flex-direction:column; gap:9px;}
-  .tree-choice{
+  .branch-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
+  .branch-card{
+    background:var(--panel); border:2px solid var(--line); border-left-width:4px; border-radius:9px;
+    padding:10px 12px; cursor:pointer;
+  }
+  .branch-card:active, .branch-card.selected{border-color:var(--soc-accent);}
+  .branch-card.selected{background:var(--soc-accent-fade);}
+  .branch-label{font-family:var(--sans); font-weight:700; font-size:11px; margin-bottom:6px; line-height:1.3;}
+  .branch-tag{
+    display:inline-block; font-family:var(--mono); font-size:8.5px; text-transform:uppercase; letter-spacing:.3px;
+    padding:3px 7px; border-radius:12px;
+  }
+
+  .stage-node{position:relative; padding-left:34px;}
+  .stage-num{
+    position:absolute; left:12px; top:12px; width:20px; height:20px; border-radius:50%;
+    background:var(--panel-raised); border:1px solid var(--line); color:var(--text-dim);
+    font-family:var(--mono); font-size:9.5px; display:flex; align-items:center; justify-content:center;
+  }
+  .stage-node.starred{border-color:var(--gold);}
+  .stage-node.starred .stage-num{background:var(--gold); border-color:var(--gold); color:#231a0a;}
+  .stage-node.starred .flow-node-label{color:var(--gold);}
+
+  .traps-node{border-color:var(--hp-yellow);}
+  .traps-node .flow-node-label{color:var(--hp-yellow);}
+
+  /* ---------- Detail panel ---------- */
+  .detail-panel{
+    background:var(--panel); border:2px solid var(--soc-accent); border-radius:12px; padding:16px;
+    margin:16px 0 24px; scroll-margin-top:16px;
+  }
+  .detail-title{font-family:var(--pixel); font-size:11px; color:var(--soc-accent); margin-bottom:10px; letter-spacing:.4px;}
+  .detail-log{
+    background:#0a0d0a; border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:12px;
+    font-family:var(--mono); font-size:9.5px; color:#7fd8a0; line-height:1.6; white-space:pre-wrap; word-break:break-word;
+  }
+  .detail-section{margin-bottom:12px;}
+  .detail-section:last-child{margin-bottom:0;}
+  .detail-label{font-family:var(--mono); font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px;}
+  .detail-body{font-family:var(--sans); font-size:12.5px; line-height:1.55;}
+  .detail-body.trap{color:var(--hp-yellow);}
+
+  .traps-list{list-style:none; margin-bottom:12px;}
+  .traps-list li{
+    font-family:var(--sans); font-size:12px; line-height:1.55; margin-bottom:10px; padding-left:20px; position:relative;
+  }
+  .traps-list li:before{content:"⚠"; position:absolute; left:0; color:var(--hp-yellow);}
+  .rule-callout{
+    background:var(--panel-raised); border:1px solid var(--hp-yellow); border-radius:8px; padding:10px 12px;
+    font-family:var(--sans); font-size:12px; color:var(--hp-yellow); line-height:1.5;
+  }
+
+  .hint{font-family:var(--mono); font-size:9.5px; color:var(--text-dim); text-align:center; margin:-4px 0 14px;}
+
+  /* ---------- Quiz ---------- */
+  .quiz-progress{font-family:var(--mono); font-size:9.5px; color:var(--text-dim); margin-bottom:10px; text-align:center;}
+  .quiz-log{
+    background:#0a0d0a; border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:14px;
+    font-family:var(--mono); font-size:9.5px; color:#7fd8a0; line-height:1.6; white-space:pre-wrap; word-break:break-word;
+  }
+  .quiz-q{font-family:var(--sans); font-weight:700; font-size:13.5px; margin-bottom:14px; line-height:1.5;}
+  .quiz-choices{display:flex; flex-direction:column; gap:9px;}
+  .quiz-choice{
     background:var(--panel-raised); border:2px solid var(--line); border-radius:9px; color:var(--text);
-    font-family:var(--sans); font-size:12.5px; text-align:left; padding:13px 14px; cursor:pointer;
+    font-family:var(--sans); font-size:12.5px; text-align:left; padding:12px 14px; cursor:pointer;
   }
-  .tree-choice:active{border-color:var(--soc-red);}
-  .tree-feedback-card{
-    background:var(--panel-raised); border:2px solid var(--hp-red); border-radius:10px; padding:14px 16px; margin-bottom:16px;
+  .quiz-choice:active{border-color:var(--soc-accent);}
+  .quiz-choice.correct{border-color:var(--hp-green); background:rgba(74,222,128,.12); color:var(--hp-green);}
+  .quiz-choice.incorrect{border-color:var(--hp-red); background:rgba(248,113,113,.12); color:var(--hp-red);}
+  .quiz-choice:disabled{cursor:default;}
+  .quiz-explain{
+    background:var(--panel-raised); border:1px solid var(--line); border-radius:9px; padding:12px 14px;
+    margin-top:14px; font-family:var(--sans); font-size:12.5px; line-height:1.55;
   }
-  .tree-feedback-head{font-family:var(--pixel); font-size:10px; color:var(--hp-red); margin-bottom:10px; letter-spacing:.4px;}
-  .tree-feedback-body{font-family:var(--sans); font-size:12.5px; line-height:1.6;}
-  .tree-retry-btn{
-    width:100%; background:var(--panel); border:2px solid var(--hp-red); color:var(--hp-red); border-radius:9px;
-    font-family:var(--sans); font-weight:800; font-size:13px; padding:12px; cursor:pointer; margin-top:14px;
+  .quiz-next-btn{
+    width:100%; background:var(--panel); border:2px solid var(--soc-accent); color:var(--soc-accent); border-radius:9px;
+    font-family:var(--sans); font-weight:800; font-size:13px; padding:13px; cursor:pointer; margin-top:14px;
   }
-  .tree-success-card{
-    background:rgba(74,222,128,.08); border:2px solid var(--hp-green); border-radius:12px; padding:18px; text-align:center;
+  .quiz-next-btn:active{background:var(--soc-accent); color:#1a0a0a;}
+  .quiz-score-card{
+    background:var(--panel); border:2px solid var(--hp-green); border-radius:12px; padding:20px; text-align:center;
   }
-  .tree-success-title{font-family:var(--pixel); font-size:12px; color:var(--hp-green); margin-bottom:12px; letter-spacing:.5px;}
-  .tree-success-body{font-family:var(--sans); font-size:13px; line-height:1.6; color:var(--text); margin-bottom:16px; text-align:left;}
-  .tree-replay-btn{
+  .quiz-score-num{font-family:var(--pixel); font-size:24px; color:var(--hp-green); margin-bottom:10px;}
+  .quiz-score-lbl{font-family:var(--sans); font-size:13px; color:var(--text-dim); margin-bottom:18px;}
+  .quiz-retry-btn{
     width:100%; background:var(--hp-green); color:#0a1a0f; border:none; border-radius:9px;
     font-family:var(--sans); font-weight:800; font-size:13px; padding:13px; cursor:pointer;
   }
-  .tree-progress{font-family:var(--mono); font-size:9.5px; color:var(--text-dim); margin-bottom:10px; text-align:center;}
 </style>
 </head>
 <body>
 <div class="frame">
   <a class="hub-link" href="index.html">← Hub</a>
-  <div class="title" style="color:var(--soc-red)">🖥️ SOC SIMULATOR 🖥️</div>
+  <div class="title" id="pageTitle">🖥️ SOC SIMULATOR 🖥️</div>
   <div class="subtitle">GHOST ADMIN field training — Domain 4.</div>
 
+  <div class="scenario-card">
+    <b>SCENARIO:</b> SSH auth.log analysis. Attacker at <b>192.168.1.164</b> (Kali) targeting <b>192.168.1.17</b> (Metasploitable2), user "<b>msfadmin</b>".
+  </div>
+
   <div class="tab-row">
-    <button class="tab-btn active" data-tab="terminal" onclick="switchTab('terminal')">📟 Terminal</button>
-    <button class="tab-btn" data-tab="decoder" onclick="switchTab('decoder')">🔍 Decoder</button>
-    <button class="tab-btn" data-tab="tree" onclick="switchTab('tree')">🌳 Decision Tree</button>
+    <button class="tab-btn active" data-tab="tree" onclick="switchTab('tree')">🌳 Decision Tree</button>
+    <button class="tab-btn" data-tab="quiz" onclick="switchTab('quiz')">🎯 Quiz Mode</button>
   </div>
 
-  <div class="tab-panel active" id="panel-terminal">
+  <div class="tab-panel active" id="panel-tree">
     <div class="terminal-box" id="terminalBox"></div>
-    <div class="term-controls">
-      <button class="term-btn" onclick="restartTerminal()">↻ REPLAY FEED</button>
-    </div>
+    <button class="term-btn" onclick="restartTerminal()">↻ REPLAY FEED</button>
+
+    <div id="flowchart"></div>
+    <div class="hint">tap any node to see the breakdown ▼</div>
+    <div class="detail-panel" id="detailPanel"></div>
   </div>
 
-  <div class="tab-panel" id="panel-decoder">
-    <div id="decoderList"></div>
-  </div>
-
-  <div class="tab-panel" id="panel-tree">
-    <div id="treeContent"></div>
+  <div class="tab-panel" id="panel-quiz">
+    <div id="quizContent"></div>
   </div>
 </div>
 
 <script src="shared/config.js"></script>
 <script>
+const ghostAdmin = BOSSES.find(b => b.id === 'd4');
+document.documentElement.style.setProperty('--soc-accent', ghostAdmin.color);
+document.documentElement.style.setProperty('--soc-accent-fade', ghostAdmin.color + '15');
+
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
@@ -123,17 +188,17 @@ function switchTab(tab){
 /* ---------- Terminal log stream ---------- */
 
 const LOG_FEED = [
-  {ts:'09:14:02', lvl:'info', text:'INFO  host=WEB03 svc=nginx msg="normal traffic baseline"'},
-  {ts:'09:14:05', lvl:'warn', text:'AUTH_FAIL user=svc_backup src=185.220.101.4 attempts=3'},
-  {ts:'09:14:09', lvl:'warn', text:'AUTH_FAIL user=svc_backup src=185.220.101.4 attempts=7'},
-  {ts:'09:14:12', lvl:'warn', text:'AUTH_OK   user=svc_backup src=185.220.101.4'},
-  {ts:'09:14:15', lvl:'warn', text:'WARN  msg="login outside normal service window"'},
-  {ts:'09:14:22', lvl:'crit', text:'PRIV_ESC user=svc_backup granted=Domain_Admin approver=NONE'},
-  {ts:'09:14:31', lvl:'crit', text:'NEW_PROC host=DC01 proc=powershell.exe parent=svc_backup.exe flags=-enc'},
-  {ts:'09:14:40', lvl:'crit', text:'NET_CONN host=DC01 dst=185.220.101.4:4444 proto=TCP'},
-  {ts:'09:14:52', lvl:'crit', text:'FILE_MOD path=C:\\Windows\\NTDS\\ntds.dit action=read_attempt'},
-  {ts:'09:15:03', lvl:'crit', text:'CRITICAL msg="possible credential dumping detected"'},
-  {ts:'09:15:10', lvl:'crit', text:'ALERT soc_analyst=you msg="GHOST ADMIN pattern match — escalate now"'},
+  {lvl:'info', text:'Did not receive identification string from 192.168.1.164 port 55210'},
+  {lvl:'warn', text:'reverse mapping checking getaddrinfo for 192.168.1.164 failed - POSSIBLE BREAK-IN ATTEMPT!'},
+  {lvl:'ok',   text:'Accepted password for msfadmin from 192.168.1.164 port 40230 ssh2'},
+  {lvl:'ok',   text:'session opened for user msfadmin'},
+  {lvl:'ok',   text:'session closed for user msfadmin'},
+  {lvl:'warn', text:'reverse mapping checking getaddrinfo for 192.168.1.164 failed - POSSIBLE BREAK-IN ATTEMPT!'},
+  {lvl:'warn', text:'authentication failure; user=msfadmin'},
+  {lvl:'warn', text:'Failed password for msfadmin from 192.168.1.164 port 54338 ssh2'},
+  {lvl:'warn', text:'PAM 2 more authentication failures; user=msfadmin'},
+  {lvl:'crit', text:'Accepted password for msfadmin from 192.168.1.164 port 41506 ssh2'},
+  {lvl:'crit', text:'session opened for user msfadmin'},
 ];
 
 let termTimer = null;
@@ -148,164 +213,295 @@ function restartTerminal(){
     const entry = LOG_FEED[i];
     const line = document.createElement('div');
     line.className = `term-line lvl-${entry.lvl}`;
-    line.innerHTML = `<span class="ts">[${entry.ts}]</span> ${escapeHtml(entry.text)}`;
+    line.textContent = entry.text;
     box.appendChild(line);
     box.scrollTop = box.scrollHeight;
     i++;
-    termTimer = setTimeout(next, 750);
+    termTimer = setTimeout(next, 700);
   }
   next();
 }
 
-/* ---------- Log line decoder ---------- */
+/* ---------- Flowchart node data ---------- */
 
-const DECODABLE_LINES = [
-  {
-    raw: '[09:14:12] AUTH_OK user=svc_backup src=185.220.101.4',
-    fields: [
-      {label:'TIMESTAMP', value:'09:14:12'},
-      {label:'EVENT', value:'AUTH_OK — a login succeeded'},
-      {label:'USER', value:'svc_backup — a service account, not a person'},
-      {label:'SOURCE IP', value:'185.220.101.4 — external, unfamiliar'},
-    ],
-    flag: '🚩 A service account logging in successfully from an external IP, right after 7 failed attempts, is a credential-stuffing pattern that just worked.'
-  },
-  {
-    raw: '[09:14:22] PRIV_ESC user=svc_backup granted=Domain_Admin approver=NONE',
-    fields: [
-      {label:'TIMESTAMP', value:'09:14:22'},
-      {label:'EVENT', value:'PRIV_ESC — a privilege escalation occurred'},
-      {label:'USER', value:'svc_backup'},
-      {label:'GRANTED', value:'Domain_Admin — the highest tier of access in the domain'},
-      {label:'APPROVER', value:'NONE'},
-    ],
-    flag: '🚩 No approval logged for a Domain Admin grant is the single biggest red flag in this whole feed — this bypassed change control entirely.'
-  },
-  {
-    raw: '[09:14:31] NEW_PROC host=DC01 proc=powershell.exe parent=svc_backup.exe flags=-enc',
-    fields: [
-      {label:'TIMESTAMP', value:'09:14:31'},
-      {label:'EVENT', value:'NEW_PROC — a new process started'},
-      {label:'HOST', value:'DC01 — a domain controller'},
-      {label:'PROCESS', value:'powershell.exe'},
-      {label:'FLAGS', value:'-enc — base64-encoded command'},
-    ],
-    flag: '🚩 Encoded PowerShell is a classic obfuscation technique — the attacker doesn\'t want the actual command visible in logs.'
-  },
-  {
-    raw: '[09:14:52] FILE_MOD path=C:\\Windows\\NTDS\\ntds.dit action=read_attempt',
-    fields: [
-      {label:'TIMESTAMP', value:'09:14:52'},
-      {label:'EVENT', value:'FILE_MOD — file access attempt'},
-      {label:'PATH', value:'NTDS.dit — the domain\'s entire password database'},
-      {label:'ACTION', value:'read_attempt'},
-    ],
-    flag: '🚩 A read attempt on ntds.dit means the scope of compromise may be the ENTIRE domain\'s credentials, not just one account.'
-  },
+const INTRO_NODES = [
+  { id:'start', label:'START', sub:'New SSH session activity detected',
+    decoder:'The auth.log begins recording a new inbound SSH connection attempt — this is the first line-level event before any pattern can be identified.',
+    logic:"Every incident starts as raw telemetry; the analyst's job is to read forward from here without assuming intent yet.",
+    trap:'Treating the very first log line as inherently suspicious just because it opens a session — a connection attempt alone is not evidence of anything.' },
+  { id:'siem', label:'SIEM Alert Fires', sub:null,
+    log:'reverse mapping checking getaddrinfo for 192.168.1.164 failed - POSSIBLE BREAK-IN ATTEMPT!',
+    decoder:"This banner fires when SSH's reverse-DNS check can't resolve the connecting IP back to a hostname. Generated automatically, before any authentication happens.",
+    logic:'CompTIA loves this line because it sounds like a confirmed intrusion but is actually just a DNS configuration quirk, common on lab/NAT’d networks with no PTR record.',
+    trap:'Selecting "initiate incident response" or "isolate the host" purely because this banner appeared. It shows up before BOTH a normal login and a compromise in this lab — must correlate with following auth lines, not react to this line alone.' },
+  { id:'pattern', label:'Pattern Recognition', sub:'Classify the sequence before reacting',
+    decoder:"This is the step where the analyst groups the raw lines by user + source IP + outcome to see which of the four patterns below is actually present, rather than reacting to any single line in isolation.",
+    logic:"CompTIA's Security Operations objectives test whether you can correctly classify an event before you act on it — classification always comes before response.",
+    trap:'Reacting to the first alarming-looking line (like the DNS banner) instead of reading the full sequence of related lines to confirm which pattern actually occurred.' },
 ];
 
-function renderDecoder(){
-  const list = document.getElementById('decoderList');
-  list.innerHTML = '';
-  DECODABLE_LINES.forEach((entry, idx)=>{
-    const btn = document.createElement('button');
-    btn.className = 'decoder-line';
-    btn.textContent = entry.raw;
-    btn.onclick = () => toggleDecoderLine(idx);
-    list.appendChild(btn);
+const BRANCH_NODES = [
+  { id:'normal', label:'Normal Login/Logout', tag:'Monitor', color:'var(--hp-green)',
+    log:'Accepted password for msfadmin from 192.168.1.164 port 40230 ssh2\nsession opened for user msfadmin\nsession closed for user msfadmin',
+    decoder:'Accepted password + session opened + closed, no failures = routine successful login/logout.',
+    logic:'Nothing here to escalate — baseline activity, log and monitor only.',
+    trap:'An answer saying "investigate this user" just because the DNS banner appeared above it — if the sequence is clean, the banner alone isn’t evidence.' },
+  { id:'bruteforce', label:'Failed Brute Force', tag:'Investigate', color:'var(--hp-yellow)',
+    log:'authentication failure; user=msfadmin\nFailed password for msfadmin from 192.168.1.164 port 54338 ssh2\nPAM 2 more authentication failures; user=msfadmin',
+    decoder:'Multiple failed-password/auth-failure lines, same user+IP, tight window = classic brute-force signature.',
+    logic:'Detection & Analysis territory — flag the source IP, escalate monitoring, NOT full containment yet since no confirmed successful compromise.',
+    trap:'Jumping straight to "eradicate" or "rebuild" off failed attempts alone — failed logins mean investigate/block, not eradicate.' },
+  { id:'compromise', label:'Successful Login After Failures', tag:'Contain', color:'var(--soc-accent)',
+    log:'Accepted password for msfadmin from 192.168.1.164 port 41506 ssh2\nsession opened for user msfadmin',
+    decoder:'Same source IP+user as the brute-force attempt, immediately followed by Accepted password. Failures → success = confirmed compromise.',
+    logic:'This triggers CONTAINMENT — isolate the host from the network, disable/reset the compromised credential, preserve logs — in that order, BEFORE eradication/rebuild.',
+    trap:'CompTIA’s #1 trap — choosing "eradicate malware" or "rebuild the server" as the FIRST step. Wrong, system is still exposed. Containment always before eradication.' },
+  { id:'handshake', label:'Protocol/Handshake Failure', tag:'Informational', color:'var(--cyan)',
+    log:'Did not receive identification string from 192.168.1.164 port 55210',
+    decoder:'Remote host opened TCP but never completed the SSH handshake — no username, no password submitted at all. Common nmap/port-scanner signature.',
+    logic:"Informational/recon-adjacent. Worth noting the IP but no auth event occurred, so it's not brute force or compromise.",
+    trap:'Labeling this "brute force" because it’s near other suspicious lines — no credentials were ever submitted, this is a different category entirely.' },
+];
 
-    const detail = document.createElement('div');
-    detail.id = `decoder-detail-${idx}`;
-    detail.className = 'decoder-detail';
-    detail.style.display = 'none';
-    detail.innerHTML = entry.fields.map(f =>
-      `<div class="field"><span class="field-label">${escapeHtml(f.label)}</span><span class="field-value">${escapeHtml(f.value)}</span></div>`
-    ).join('') + `<div class="flag">${escapeHtml(entry.flag)}</div>`;
-    list.appendChild(detail);
-  });
-}
-
-function toggleDecoderLine(idx){
-  const detail = document.getElementById(`decoder-detail-${idx}`);
-  const btn = document.querySelectorAll('.decoder-line')[idx];
-  const opening = detail.style.display === 'none';
-  detail.style.display = opening ? 'block' : 'none';
-  btn.classList.toggle('open', opening);
-}
-
-/* ---------- Decision tree ---------- */
-
-const TREE_NODES = {
-  start: {
-    progress: '1 / 3',
-    scenario: "GHOST ADMIN INCIDENT — T+0:00. Your SIEM fires an alert: the svc_backup service account just logged in successfully after 7 failed attempts from an unfamiliar external IP, then was immediately granted Domain Admin with no approval on record. What's your FIRST move?",
-    choices: [
-      {label:'Isolate the account: disable svc_backup and force a credential reset', next:'node2'},
-      {label:'Wait and monitor — it might be a false positive', feedback:"Waiting costs time you don't have. The account is being actively used maliciously right now — every minute it stays active increases how much damage gets done and how hard it is to reconstruct later. Contain first, investigate the full picture second."},
-    ]
-  },
-  node2: {
-    progress: '2 / 3',
-    scenario: "Good call — svc_backup is disabled. Your log stream shows a PowerShell process (encoded command) was spawned by svc_backup on DC01 just before you acted, and it opened an outbound connection to the same external IP on port 4444. What's your NEXT move?",
-    choices: [
-      {label:'Isolate DC01 from the network immediately, preserve memory for forensics', next:'node3'},
-      {label:"Just kill the malicious PowerShell process and move on", feedback:"Killing the process alone doesn't sever the network channel, and it may destroy volatile evidence you need for forensics. The host itself needs to be isolated, not just the one process you happened to spot."},
-    ]
-  },
-  node3: {
-    progress: '3 / 3',
-    scenario: "DC01 is isolated. A file-modification log shows a read attempt on ntds.dit — the domain's entire password database — around the same time as the encoded PowerShell activity. Given that, what's the right next step?",
-    choices: [
-      {label:'Treat this as a suspected full domain-credential compromise: begin a domain-wide password reset and notify incident command', next:'success'},
-      {label:"Reset only svc_backup's password since that's the account you actually saw compromised", feedback:"If ntds.dit was read, every credential in the domain has to be treated as potentially exposed — not just the one account you happened to notice first. Scoping too narrowly here leaves the door open for the attacker to come back in on a different account."},
-    ]
-  },
+const IR_INTRO = {
+  id:'irseq', label:'Incident Response Sequence', sub:'Six stages, fixed order',
+  decoder:'Once a pattern is classified as an actual incident (not just noise), the response follows a fixed lifecycle, in order.',
+  logic:"CompTIA's IR lifecycle is Preparation → Detection & Analysis → Containment → Eradication → Recovery → Post-Incident Activity, with Communication running throughout — memorize the order, since exam questions are built around picking the “next” step.",
+  trap:'Skipping stages (e.g., jumping from Detection straight to Eradication) or reordering them because a distractor answer "sounds" more urgent.'
 };
 
-let currentNodeId = 'start';
+const STAGE_NODES = [
+  { id:'prep', label:'Preparation', num:1,
+    decoder:'Everything done BEFORE an incident occurs — logging enabled, IR plan documented, tools/playbooks ready, roles assigned.',
+    logic:'CompTIA tests this as the "readiness" stage; if a question describes activity happening before any alert fired, it’s Preparation.',
+    trap:'Confusing ongoing readiness work (patching, training, tabletop exercises) with the Recovery stage that happens after an incident — Preparation is proactive, Recovery is reactive.' },
+  { id:'detect', label:'Detection & Analysis', num:2,
+    decoder:'The stage where alerts are triaged, logs are correlated, and the team confirms whether an event is a real incident and how severe it is — exactly what happened when the DNS banner and brute-force lines were read together above.',
+    logic:"This is where scope and impact get determined — you don't move to Containment until you've actually confirmed there's something to contain.",
+    trap:'Skipping straight to Containment/Eradication language on a question that’s actually still describing analysis/triage — if the scenario says "you are reviewing logs to determine what happened," you’re still in this stage.' },
+  { id:'contain', label:'Containment', num:3, star:true,
+    decoder:'Isolate the affected system (network segmentation, disable account, revoke session) to stop the bleeding without destroying evidence.',
+    logic:"This is CompTIA's #1 sequencing trap — Containment must happen before Eradication on nearly every exam question involving an active compromise.",
+    trap:'Any answer implying rebuild/wipe/patch BEFORE isolating first.' },
+  { id:'eradicate', label:'Eradication', num:4,
+    decoder:'Removing the actual root cause after the system is already contained — deleting malware, closing the exploited vulnerability, removing attacker-created accounts or backdoors.',
+    logic:'Only happens after Containment is complete; doing it earlier risks alerting the attacker or destroying evidence while they still have access.',
+    trap:'An answer that reads as "eradication" (patch, remove malware, delete account) offered as the FIRST response to an active compromise — it’s correct action, wrong order.' },
+  { id:'recover', label:'Recovery', num:5,
+    decoder:"Restoring the affected system to normal production — from clean backups where possible, validating it's clean, then reconnecting it to the network.",
+    logic:'Comes after Eradication confirms the threat is actually gone; exam scenarios describing "bringing the system back online" or "restoring from backup" belong here.',
+    trap:"Choosing Recovery actions while containment/eradication are still incomplete — reconnecting a system before you're sure it's clean re-exposes the network." },
+  { id:'post', label:'Post-Incident', num:6,
+    decoder:'The after-action review — root cause analysis, lessons-learned report, updating the IR plan and detection rules based on what was missed.',
+    logic:"CompTIA frames this as the stage that feeds back into Preparation for the next incident — it's the only stage that's explicitly retrospective.",
+    trap:'An answer describing "updating the incident response plan" or "conducting a lessons-learned meeting" being misclassified as Preparation — it’s Post-Incident because it’s reacting to a specific completed incident, not general readiness.' },
+  { id:'comm', label:'Communication', num:7,
+    decoder:'Notifying stakeholders — leadership, legal, affected users, and where required, regulators/law enforcement — proportional to the incident’s severity and legal requirements.',
+    logic:'CompTIA treats this as running in parallel with the other stages, not as a single standalone step at the end; who gets notified and when depends on severity and any breach-notification law that applies.',
+    trap:'Assuming communication only happens at the very end (e.g., only in Post-Incident) — high-severity incidents often require notifying leadership/legal during Detection & Analysis or Containment, not after everything is resolved.' },
+];
 
-function renderTreeNode(nodeId){
-  currentNodeId = nodeId;
-  const node = TREE_NODES[nodeId];
-  const container = document.getElementById('treeContent');
-  container.innerHTML = `
-    <div class="tree-progress">STEP ${node.progress}</div>
-    <div class="tree-scenario">${escapeHtml(node.scenario)}</div>
-    <div class="tree-choices">
-      ${node.choices.map((c,i) => `<button class="tree-choice" onclick="chooseTreeOption('${nodeId}', ${i})">${escapeHtml(c.label)}</button>`).join('')}
-    </div>
-  `;
+const TRAPS_NODE = {
+  id:'traps', label:'Exam Traps', sub:'Summary — read this before test day',
+  list:[
+    '"Investigate source IP" chosen as the FIRST action during an already-identified active attack — wastes time.',
+    '"Eradicate/rebuild" chosen before containment — system still exposed.',
+    '"Did not receive identification string" mislabeled as brute force — no auth was ever attempted.',
+    '"POSSIBLE BREAK-IN ATTEMPT!" treated as automatic proof of compromise — often a DNS false positive, verify against following lines.',
+  ],
+  rule:'Ten-second rule: read the full snippet, identify user + IP + outcome, THEN match to a stage.'
+};
+
+const ALL_NODES = {};
+[...INTRO_NODES, ...BRANCH_NODES, IR_INTRO, ...STAGE_NODES, TRAPS_NODE].forEach(n => ALL_NODES[n.id] = n);
+
+/* ---------- Flowchart rendering ---------- */
+
+function nodeCardHtml(node){
+  return `
+    <div class="flow-node" data-node="${node.id}" onclick="selectNode('${node.id}')">
+      <div class="flow-node-label">${escapeHtml(node.label)}</div>
+      ${node.sub ? `<div class="flow-node-sub">${escapeHtml(node.sub)}</div>` : ''}
+    </div>`;
 }
 
-function chooseTreeOption(nodeId, choiceIdx){
-  const choice = TREE_NODES[nodeId].choices[choiceIdx];
-  if(choice.next === 'success'){
-    renderTreeSuccess();
-  } else if(choice.next){
-    renderTreeNode(choice.next);
+function renderFlowchart(){
+  const el = document.getElementById('flowchart');
+  let html = '';
+
+  INTRO_NODES.forEach((node, i) => {
+    html += nodeCardHtml(node);
+    html += `<div class="flow-arrow">↓</div>`;
+  });
+
+  html += `<div class="branch-grid">`;
+  BRANCH_NODES.forEach(node => {
+    html += `
+      <div class="branch-card" data-node="${node.id}" style="border-left-color:${node.color}" onclick="selectNode('${node.id}')">
+        <div class="branch-label">${escapeHtml(node.label)}</div>
+        <span class="branch-tag" style="background:${node.color}22; color:${node.color}">${escapeHtml(node.tag)}</span>
+      </div>`;
+  });
+  html += `</div><div class="flow-arrow">↓</div>`;
+
+  html += nodeCardHtml(IR_INTRO);
+  html += `<div class="flow-arrow">↓</div>`;
+
+  STAGE_NODES.forEach(node => {
+    html += `
+      <div class="flow-node stage-node ${node.star ? 'starred' : ''}" data-node="${node.id}" onclick="selectNode('${node.id}')">
+        <div class="stage-num">${node.star ? '★' : node.num}</div>
+        <div class="flow-node-label">${escapeHtml(node.label)}</div>
+      </div>`;
+  });
+
+  html += `
+    <div class="flow-node traps-node" data-node="${TRAPS_NODE.id}" onclick="selectNode('${TRAPS_NODE.id}')">
+      <div class="flow-node-label">⚠ ${escapeHtml(TRAPS_NODE.label)}</div>
+      <div class="flow-node-sub">${escapeHtml(TRAPS_NODE.sub)}</div>
+    </div>`;
+
+  el.innerHTML = html;
+}
+
+function selectNode(id){
+  document.querySelectorAll('[data-node]').forEach(el => el.classList.toggle('selected', el.dataset.node === id));
+  const node = ALL_NODES[id];
+  const panel = document.getElementById('detailPanel');
+
+  if(id === 'traps'){
+    panel.innerHTML = `
+      <div class="detail-title">⚠ ${escapeHtml(node.label)}</div>
+      <ul class="traps-list">${node.list.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>
+      <div class="rule-callout">${escapeHtml(node.rule)}</div>
+    `;
   } else {
-    renderTreeFeedback(nodeId, choice.feedback);
+    panel.innerHTML = `
+      <div class="detail-title">${escapeHtml(node.label)}</div>
+      ${node.log ? `<div class="detail-log">${escapeHtml(node.log)}</div>` : ''}
+      <div class="detail-section">
+        <div class="detail-label">🔍 Log Line Decoder</div>
+        <div class="detail-body">${escapeHtml(node.decoder)}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">🧠 CompTIA Logic</div>
+        <div class="detail-body">${escapeHtml(node.logic)}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">⚠️ Exam Trap</div>
+        <div class="detail-body trap">${escapeHtml(node.trap)}</div>
+      </div>
+    `;
   }
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
-function renderTreeFeedback(nodeId, feedback){
-  const container = document.getElementById('treeContent');
+/* ---------- Quiz mode ---------- */
+
+const QUIZ = [
+  { log:'Accepted password for msfadmin from 192.168.1.164 port 40230 ssh2\nsession opened for user msfadmin\nsession closed for user msfadmin',
+    question:'Correct SOC action?',
+    correct:'Monitor only — normal successful login/logout.',
+    distractors:['Investigate the source IP as a precaution.', 'Isolate the host — the DNS banner appeared earlier in the log.', 'Classify as brute-force and reset the credential.'],
+    why:'Single accepted login, clean open/close, no failures — nothing warrants escalation.' },
+  { log:'authentication failure; user=msfadmin\nFailed password for msfadmin from 192.168.1.164 port 54338 ssh2\nPAM 2 more authentication failures; user=msfadmin',
+    question:'Correct classification?',
+    correct:'Brute-force attempt — investigate/flag the source IP.',
+    distractors:['No action needed — failed logins are routine noise.', 'Eradicate — rebuild the box immediately.', 'Contain — isolate the host from the network.'],
+    why:'Repeated failures = brute-force indicator, calls for investigation/blocking, not eradication yet.' },
+  { log:'Failed password for msfadmin from 192.168.1.164 port 54338 ssh2\nPAM 2 more authentication failures; user=msfadmin\nAccepted password for msfadmin from 192.168.1.164 port 41506 ssh2\nsession opened for user msfadmin',
+    question:'What is the FIRST step?',
+    correct:'Contain — isolate the host and reset the compromised credential.',
+    distractors:['Eradicate — remove malware and patch the vulnerability.', 'Recovery — restore the system from backup.', 'Investigate the source IP before taking any action.'],
+    why:"CompTIA's #1 sequencing trap — confirmed compromise requires containment first, before eradication/rebuild." },
+  { log:'Did not receive identification string from 192.168.1.164 port 55210',
+    question:'What does this represent?',
+    correct:'A failed SSH handshake, likely a port/vulnerability scan — no auth was attempted.',
+    distractors:['A successful brute-force attack.', 'Confirmed compromise — begin containment.', 'A normal login with a delayed response.'],
+    why:'No credentials submitted, handshake never completed — scan/recon, not brute force or compromise.' },
+  { log:'reverse mapping checking getaddrinfo for 192.168.1.164 failed - POSSIBLE BREAK-IN ATTEMPT!',
+    question:'What should you do?',
+    correct:'Correlate it with the following auth lines before deciding anything.',
+    distractors:['Immediately isolate the host — this is a confirmed intrusion.', 'Ignore it — this banner is always meaningless.', 'Classify it as a successful brute-force login.'],
+    why:'Generated by failed reverse-DNS lookup, not an auth event — can precede either a normal login or a real compromise.' },
+  { log:null,
+    question:'During an active confirmed compromise, what comes immediately after Detection & Analysis?',
+    correct:'Containment.',
+    distractors:['Eradication', 'Recovery', 'Post-Incident Activity'],
+    why:'Order is Preparation → Detection & Analysis → Containment → Eradication → Recovery → Post-Incident. Containment always precedes Eradication.' },
+];
+
+let quizIdx = 0;
+let quizScore = 0;
+let quizShuffled = [];
+
+function shuffleArr(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startQuiz(){
+  quizIdx = 0;
+  quizScore = 0;
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion(){
+  const q = QUIZ[quizIdx];
+  quizShuffled = shuffleArr([q.correct, ...q.distractors]);
+  const container = document.getElementById('quizContent');
   container.innerHTML = `
-    <div class="tree-feedback-card">
-      <div class="tree-feedback-head">◆ NOT QUITE ◆</div>
-      <div class="tree-feedback-body">${escapeHtml(feedback)}</div>
-      <button class="tree-retry-btn" onclick="renderTreeNode('${nodeId}')">Try Again ▶</button>
+    <div class="quiz-progress">QUESTION ${quizIdx+1} / ${QUIZ.length} · SCORE ${quizScore}</div>
+    ${q.log ? `<div class="quiz-log">${escapeHtml(q.log)}</div>` : ''}
+    <div class="quiz-q">${escapeHtml(q.question)}</div>
+    <div class="quiz-choices" id="quizChoices">
+      ${quizShuffled.map((c,i) => `<button class="quiz-choice" onclick="answerQuiz(${i})">${escapeHtml(c)}</button>`).join('')}
     </div>
   `;
 }
 
-function renderTreeSuccess(){
-  const container = document.getElementById('treeContent');
+function answerQuiz(idx){
+  const q = QUIZ[quizIdx];
+  const chosen = quizShuffled[idx];
+  const correct = chosen === q.correct;
+  if(correct) quizScore++;
+
+  document.querySelectorAll('#quizChoices .quiz-choice').forEach((btn,i) => {
+    btn.disabled = true;
+    if(quizShuffled[i] === q.correct) btn.classList.add('correct');
+    else if(i === idx) btn.classList.add('incorrect');
+  });
+
+  const container = document.getElementById('quizContent');
+  const explain = document.createElement('div');
+  explain.className = 'quiz-explain';
+  explain.textContent = q.why;
+  container.appendChild(explain);
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'quiz-next-btn';
+  nextBtn.textContent = quizIdx < QUIZ.length - 1 ? 'Next Question ▶' : 'See Results ▶';
+  nextBtn.onclick = () => {
+    quizIdx++;
+    if(quizIdx < QUIZ.length) renderQuizQuestion();
+    else renderQuizResults();
+  };
+  container.appendChild(nextBtn);
+
+  document.querySelector('.quiz-progress').textContent = `QUESTION ${quizIdx+1} / ${QUIZ.length} · SCORE ${quizScore}`;
+}
+
+function renderQuizResults(){
+  const container = document.getElementById('quizContent');
   container.innerHTML = `
-    <div class="tree-success-card">
-      <div class="tree-success-title">🏆 INCIDENT CONTAINED</div>
-      <div class="tree-success-body">GHOST ADMIN neutralized. You isolated the compromised account fast, cut network access before further lateral movement, and correctly scoped the blast radius to the whole domain instead of just the account you first noticed.<br><br>That's the instinct Domain 4 incident response questions are testing: contain first, scope broadly, verify before declaring victory.</div>
-      <button class="tree-replay-btn" onclick="renderTreeNode('start')">↻ Replay Scenario</button>
+    <div class="quiz-score-card">
+      <div class="quiz-score-num">${quizScore} / ${QUIZ.length}</div>
+      <div class="quiz-score-lbl">correct</div>
+      <button class="quiz-retry-btn" onclick="startQuiz()">↻ Retry Quiz</button>
     </div>
   `;
 }
@@ -313,8 +509,9 @@ function renderTreeSuccess(){
 /* ---------- Boot ---------- */
 
 restartTerminal();
-renderDecoder();
-renderTreeNode('start');
+renderFlowchart();
+selectNode('start');
+startQuiz();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{

@@ -16,12 +16,13 @@
   .progress-track{width:100%; height:10px; background:#120f1c; border-radius:5px; overflow:hidden; border:1px solid var(--line); margin-top:10px;}
   .progress-fill{height:100%; background:var(--cyan); transition:width .3s ease;}
 
-  .domain-group{margin-bottom:18px;}
-  .domain-head{
-    display:flex; align-items:center; justify-content:space-between; padding:8px 4px; margin-bottom:8px;
-    font-family:var(--pixel); font-size:9.5px; letter-spacing:.4px; border-bottom:2px solid var(--line);
+  .day-group{margin-bottom:18px;}
+  .day-head{
+    padding:8px 4px; margin-bottom:8px; border-bottom:2px solid var(--line);
   }
-  .domain-count{font-family:var(--mono); font-size:9px; color:var(--text-dim); text-transform:none; letter-spacing:0;}
+  .day-label{font-family:var(--pixel); font-size:9.5px; letter-spacing:.4px;}
+  .day-sub{font-family:var(--mono); font-size:9px; color:var(--text-dim); margin-top:3px;}
+  .day-count{font-family:var(--mono); font-size:9px; color:var(--text-dim); float:right;}
 
   .video-row{
     display:flex; align-items:center; gap:12px; background:var(--panel); border:2px solid var(--line);
@@ -33,7 +34,8 @@
     display:flex; align-items:center; justify-content:center; font-size:13px;
   }
   .video-row.watched .video-check{background:var(--hp-green); border-color:var(--hp-green); color:#0a1a0f;}
-  .video-title{font-family:var(--sans); font-size:12.5px; flex:1;}
+  .video-title{font-family:var(--sans); font-size:12px; flex:1;}
+  .video-dur{font-family:var(--mono); font-size:10px; color:var(--text-dim); flex-shrink:0;}
   .video-row.watched .video-title{text-decoration:line-through; color:var(--text-dim);}
 </style>
 </head>
@@ -49,7 +51,7 @@
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
 
-  <div id="domainGroups"></div>
+  <div id="dayGroups"></div>
 
   <div class="reset-row">
     <button class="reset-link" onclick="resetSchedule()">reset watch progress</button>
@@ -58,7 +60,15 @@
 
 <script src="shared/config.js"></script>
 <script>
-let videos = [];
+const DAY_META = {
+  wed1: { label:'WEDNESDAY', sub:'Domain 3 — Architecture', domains:['d3'] },
+  thu:  { label:'THURSDAY',  sub:'Domain 2 — Threats & Vulnerabilities', domains:['d2'] },
+  fri:  { label:'FRIDAY',    sub:'Domain 1 + 5 — Combined', domains:['d1','d5'] },
+  sat:  { label:'SATURDAY',  sub:'Full Consolidation', domains:[] },
+};
+const DAY_ORDER = ['wed1', 'thu', 'fri', 'sat'];
+
+let schedule = {};
 let schedState = { watched: {} };
 
 function loadScheduleState(){
@@ -83,36 +93,52 @@ function toggleWatched(id){
   render();
 }
 
+function dayAccentColor(meta){
+  if(meta.domains.length === 1) return BOSSES.find(b => b.id === meta.domains[0]).color;
+  return 'var(--gold)';
+}
+
 function render(){
-  const watchedCount = videos.filter(v => schedState.watched[v.id]).length;
-  const total = videos.length;
+  let total = 0, watchedCount = 0;
+  DAY_ORDER.forEach(dayKey => {
+    (schedule[dayKey] || []).forEach((v, i) => {
+      total++;
+      if(schedState.watched[`${dayKey}__${i}`]) watchedCount++;
+    });
+  });
   document.getElementById('progressNum').textContent = `${watchedCount} / ${total}`;
   document.getElementById('progressFill').style.width = total ? `${(watchedCount/total)*100}%` : '0%';
 
-  const container = document.getElementById('domainGroups');
+  const container = document.getElementById('dayGroups');
   container.innerHTML = '';
-  BOSSES.forEach(boss=>{
-    const domainVideos = videos.filter(v => v.domain === boss.domain);
-    if(domainVideos.length === 0) return;
-    const domainWatched = domainVideos.filter(v => schedState.watched[v.id]).length;
+  DAY_ORDER.forEach(dayKey => {
+    const videos = schedule[dayKey];
+    if(!videos || videos.length === 0) return;
+    const meta = DAY_META[dayKey];
+    const accent = dayAccentColor(meta);
+    const dayWatched = videos.filter((v,i) => schedState.watched[`${dayKey}__${i}`]).length;
 
     const group = document.createElement('div');
-    group.className = 'domain-group';
+    group.className = 'day-group';
     group.innerHTML = `
-      <div class="domain-head" style="color:${boss.color}">
-        <span>${escapeHtml(boss.name)}</span>
-        <span class="domain-count">${domainWatched} / ${domainVideos.length}</span>
+      <div class="day-head" style="color:${accent}">
+        <span class="day-label">${escapeHtml(meta.label)}</span>
+        <span class="day-count">${dayWatched} / ${videos.length}</span>
+        <div class="day-sub">${escapeHtml(meta.sub)}</div>
       </div>
     `;
-    domainVideos.forEach(v=>{
-      const watched = !!schedState.watched[v.id];
+    videos.forEach((v, i) => {
+      const id = `${dayKey}__${i}`;
+      const [title, duration] = v;
+      const watched = !!schedState.watched[id];
       const row = document.createElement('div');
       row.className = 'video-row' + (watched ? ' watched' : '');
-      row.style.borderLeftColor = boss.color;
-      row.onclick = () => toggleWatched(v.id);
+      row.style.borderLeftColor = accent;
+      row.onclick = () => toggleWatched(id);
       row.innerHTML = `
         <span class="video-check">${watched ? '✓' : ''}</span>
-        <span class="video-title">${escapeHtml(v.title)}</span>
+        <span class="video-title">${escapeHtml(title)}</span>
+        <span class="video-dur">${escapeHtml(duration)}</span>
       `;
       group.appendChild(row);
     });
@@ -120,19 +146,19 @@ function render(){
   });
 }
 
-async function loadVideos(){
+async function loadSchedule(){
   try{
     const res = await fetch('./data/schedule.json');
-    videos = await res.json();
+    schedule = await res.json();
   }catch(e){
     console.error('failed to load schedule.json', e);
-    videos = [];
+    schedule = {};
   }
 }
 
 (async function init(){
   loadScheduleState();
-  await loadVideos();
+  await loadSchedule();
   render();
 })();
 

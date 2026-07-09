@@ -1,26 +1,38 @@
-[
-  {"id":"v1","domain":"4.0","title":"Domain 4 — Video 1 (rename me)"},
-  {"id":"v2","domain":"4.0","title":"Domain 4 — Video 2 (rename me)"},
-  {"id":"v3","domain":"4.0","title":"Domain 4 — Video 3 (rename me)"},
-  {"id":"v4","domain":"4.0","title":"Domain 4 — Video 4 (rename me)"},
-  {"id":"v5","domain":"4.0","title":"Domain 4 — Video 5 (rename me)"},
-  {"id":"v6","domain":"4.0","title":"Domain 4 — Video 6 (rename me)"},
-  {"id":"v7","domain":"4.0","title":"Domain 4 — Video 7 (rename me)"},
-  {"id":"v8","domain":"2.0","title":"Domain 2 — Video 1 (rename me)"},
-  {"id":"v9","domain":"2.0","title":"Domain 2 — Video 2 (rename me)"},
-  {"id":"v10","domain":"2.0","title":"Domain 2 — Video 3 (rename me)"},
-  {"id":"v11","domain":"2.0","title":"Domain 2 — Video 4 (rename me)"},
-  {"id":"v12","domain":"2.0","title":"Domain 2 — Video 5 (rename me)"},
-  {"id":"v13","domain":"3.0","title":"Domain 3 — Video 1 (rename me)"},
-  {"id":"v14","domain":"3.0","title":"Domain 3 — Video 2 (rename me)"},
-  {"id":"v15","domain":"3.0","title":"Domain 3 — Video 3 (rename me)"},
-  {"id":"v16","domain":"3.0","title":"Domain 3 — Video 4 (rename me)"},
-  {"id":"v17","domain":"3.0","title":"Domain 3 — Video 5 (rename me)"},
-  {"id":"v18","domain":"5.0","title":"Domain 5 — Video 1 (rename me)"},
-  {"id":"v19","domain":"5.0","title":"Domain 5 — Video 2 (rename me)"},
-  {"id":"v20","domain":"5.0","title":"Domain 5 — Video 3 (rename me)"},
-  {"id":"v21","domain":"5.0","title":"Domain 5 — Video 4 (rename me)"},
-  {"id":"v22","domain":"1.0","title":"Domain 1 — Video 1 (rename me)"},
-  {"id":"v23","domain":"1.0","title":"Domain 1 — Video 2 (rename me)"},
-  {"id":"v24","domain":"1.0","title":"Domain 1 — Video 3 (rename me)"}
-]
+{
+  "wed1": [
+    ["#248 Automation and Orchestration", "7 min"],
+    ["#249 When to Automate and Orchestrate", "10 min"],
+    ["#251 Automating Support Tickets", "7 min"],
+    ["#253 Automating Security", "5 min"],
+    ["#206 User Behavior Analytics", "6 min"],
+    ["#204 Email Security", "8 min"],
+    ["#162 Federation", "5 min"],
+    ["#232 Digital Forensic Procedures", "13 min"],
+    ["#233 Data Collection Procedures", "9 min"]
+  ],
+  "thu": [
+    ["#128 Data Backups", "11 min"],
+    ["#147 Firewalls", "12 min"],
+    ["#148 Configuring Firewalls", "14 min"],
+    ["#65 Securing Data", "4 min"],
+    ["#152 Securing Network Communications", "21 min"]
+  ],
+  "fri": [
+    ["#184 On-Path Attacks", "4 min"],
+    ["#178 Distributed Denial of Service", "8 min"],
+    ["#39 Pretexting", "4 min"],
+    ["#24 Insider Threats", "6 min"],
+    ["#25 Shadow IT", "5 min"],
+    ["#189 Restricting Applications", "7 min"],
+    ["#21 Hacktivists", "4 min"]
+  ],
+  "sat": [
+    ["#74 Public Key Infrastructure (PKI)", "6 min"],
+    ["#73 Increasing Hash Security", "8 min"],
+    ["#70 Symmetric Algorithms", "6 min"],
+    ["#15 Zero Trust", "8 min"],
+    ["#92 Vendor Assessment", "5 min"],
+    ["#94 Contracts and Agreements", "5 min"],
+    ["#87 Risk Management Strategies", "6 min"]
+  ]
+}
