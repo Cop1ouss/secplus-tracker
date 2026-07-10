@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#161320">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="shared/base.css">
+<title>Glossary — Sec+ Mission Hub</title>
+<style>
+  .search-box{
+    width:100%; background:var(--panel); border:2px solid var(--line); border-radius:9px; color:var(--text);
+    font-family:var(--sans); font-size:13px; padding:12px 14px; margin-bottom:12px;
+  }
+  .search-box:focus{outline:none; border-color:var(--gold);}
+  .search-box::placeholder{color:var(--text-dim);}
+
+  .domain-filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+  .domain-filter-btn{
+    background:var(--panel); border:2px solid var(--line); border-radius:20px; color:var(--text-dim);
+    font-family:var(--mono); font-size:10px; padding:7px 12px; cursor:pointer;
+  }
+  .domain-filter-btn.active{color:#0a0a0a; font-weight:700;}
+
+  .result-count{font-family:var(--mono); font-size:9.5px; color:var(--text-dim); margin-bottom:16px;}
+
+  .glossary-card{
+    background:var(--panel); border:2px solid var(--line); border-left-width:4px; border-radius:10px;
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .glossary-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:6px; flex-wrap:wrap;}
+  .glossary-term{font-family:var(--sans); font-weight:800; font-size:13.5px;}
+  .glossary-domain-tag{
+    font-family:var(--mono); font-size:8.5px; text-transform:uppercase; letter-spacing:.3px;
+    padding:3px 8px; border-radius:12px; flex-shrink:0;
+  }
+  .glossary-def{font-family:var(--sans); font-size:12.5px; line-height:1.55; color:var(--text); margin-bottom:8px;}
+  .glossary-confused{
+    font-family:var(--mono); font-size:10.5px; color:var(--text-dim); line-height:1.5;
+    border-top:1px solid var(--line); padding-top:8px;
+  }
+  .glossary-confused b{color:var(--gold);}
+
+  .no-results{font-family:var(--mono); font-size:11px; color:var(--text-dim); text-align:center; margin:30px 0;}
+</style>
+</head>
+<body>
+<div class="frame">
+  <a class="hub-link" href="index.html">← Hub</a>
+  <div class="title" style="color:var(--gold)">📖 GLOSSARY 📖</div>
+  <div class="subtitle">Searchable terminology reference.</div>
+
+  <input type="text" class="search-box" id="searchBox" placeholder="Search terms…" oninput="renderGlossary()">
+  <div class="domain-filters" id="domainFilters"></div>
+  <div class="result-count" id="resultCount"></div>
+  <div id="glossaryList"></div>
+</div>
+
+<script src="shared/config.js"></script>
+<script>
+const GLOSSARY = [
+  // Domain 1 — Root Warden
+  { term:'Certificate Authority (CA)', domain:'d1', def:'Issues and manages digital certificates and signature wrappers for public keys.', confused:'Registration Authority (RA) — only checks credentials, doesn\'t issue certs.' },
+  { term:'Key escrow', domain:'d1', def:'A copy of a cryptographic key given to a third party for recovery if lost.', confused:'Public Key Infrastructure (PKI) — the overall framework; escrow is one specific mechanism within it.' },
+  { term:'Key exchange', domain:'d1', def:'Method of exchanging cryptographic keys between two parties.' },
+  { term:'Key stretching', domain:'d1', def:'Repeated hashing of a password to slow brute-force attacks.', confused:'Salting — adds random data to a hash input (a different, though related, technique).' },
+  { term:'Stream cipher', domain:'d1', def:'Encrypts data one bit/byte at a time, for unknown-length messages.', confused:'Block cipher — encrypts fixed-size blocks and needs padding.' },
+  { term:'Policy-driven access control', domain:'d1', def:"Zero Trust's Control Plane mechanism — access decisions based on policy, identity, and threat analysis.", confused:'Role-based access control (RBAC) — a general model usable in any architecture, not Zero-Trust-specific.' },
+  { term:'Control Plane (Zero Trust)', domain:'d1', def:'The part of Zero Trust architecture that makes access decisions.' },
+  { term:'Data Plane (Zero Trust)', domain:'d1', def:'Carries traffic once access is granted by the Control Plane.' },
+  { term:'Third-party certificate', domain:'d1', def:'A certificate signed/verified by an external, recognized CA — higher trust than self-signed.' },
+  { term:'Blockchain', domain:'d1', def:'A distributed public ledger on a peer-to-peer network, provides integrity and a permanent record.' },
+  { term:'Software dependency', domain:'d1', def:'One module or piece of software requiring another to function.' },
+  { term:'Impact analysis', domain:'d1', def:"Evaluating a proposed change's effects on systems, user experience, and business processes." },
+
+  // Domain 2 — Vectorwraith
+  { term:'On-path attack', domain:'d2', def:'Intercepting or modifying data in transit (e.g. via a rogue wireless access point).' },
+  { term:'Reflected DDoS', domain:'d2', def:'A forged source IP tricks third-party servers into flooding the victim with unsolicited responses.' },
+  { term:'Cryptographic collision', domain:'d2', def:'Two different inputs producing the same hash output.' },
+  { term:'Pretexting', domain:'d2', def:'A fabricated scenario used to pressure a target into compliance.', confused:'Whaling — phishing specifically targeting executives.' },
+  { term:'Insider threat', domain:'d2', def:'A threat actor with malicious intent who abuses legitimate access.', confused:'Shadow IT — non-malicious use of unauthorized tools for convenience.' },
+  { term:'Application allow list', domain:'d2', def:'Only pre-approved programs are permitted to run; everything else is blocked.', confused:'Configuration enforcement — locks in predefined security settings, not which programs can run.' },
+  { term:'Time-of-use (TOU)', domain:'d2', def:'An attacker manipulates a resource between its creation and its use by an application.', confused:'Race condition — a broader term for unexpected event ordering/timing.' },
+  { term:'Privilege escalation', domain:'d2', def:"Unauthorized elevation of an account's permissions beyond what it was assigned." },
+  { term:'Data exfiltration', domain:'d2', def:'Unauthorized transfer of sensitive data to an external destination.' },
+  { term:'Phishing', domain:'d2', def:'Email-based social engineering.' },
+  { term:'Smishing', domain:'d2', def:'SMS-based social engineering.' },
+  { term:'Vishing', domain:'d2', def:'Voice-call-based social engineering.' },
+
+  // Domain 3 — Bastion Prime
+  { term:'Masking', domain:'d3', def:'Substitutes fictitious but structurally similar data, used in non-production environments.' },
+  { term:'Offsite backup', domain:'d3', def:'A physically separate backup location, protects against local disasters.' },
+  { term:'EAP', domain:'d3', def:'Extensible Authentication Protocol — a flexible framework supporting multiple pluggable auth methods, works for both wired and wireless.' },
+  { term:'NGFW', domain:'d3', def:'Next-generation firewall — adds IPS, app-awareness, and deep packet inspection beyond basic firewalls.' },
+  { term:'Layer 7 (Application layer)', domain:'d3', def:'The OSI layer where content-specific filtering happens (URLs, HTTP headers).' },
+  { term:'Responsibility matrix', domain:'d3', def:'Document defining which party (cloud provider, customer, user) is accountable for what in a cloud agreement.' },
+  { term:'UTM', domain:'d3', def:'Unified Threat Management — combines multiple security functions (IPS, antivirus, VPN) into one appliance.' },
+  { term:'Fail-closed', domain:'d3', def:'Denies all access if the access-control system fails — a security-first default.', confused:'Fail-open — allows access on failure, an availability-first default.' },
+  { term:'Snapshot', domain:'d3', def:'Captures system state at a point in time for fast recovery, without a full backup.' },
+
+  // Domain 4 — Ghost Admin
+  { term:'Ticket creation', domain:'d4', def:'Tracks/manages issues, coordinates teams, measures accountability.', confused:'NOT specifically about "team cohesion" — a common exam trap.' },
+  { term:'Continuous Integration (CI)', domain:'d4', def:'Integrating code changes regularly into a shared repo, catches security issues early.', confused:'Not about patch automation.' },
+  { term:'Technical debt', domain:'d4', def:'The future cost of deferred fixes/shortcuts; increases complexity and hinders automation/orchestration long-term.', confused:'Single point of failure — a structural weak point, not a deferred cost.' },
+  { term:'Federation', domain:'d4', def:'Sharing digital identities across organizations for SSO-like access between companies.' },
+  { term:'UBA (User Behavior Analytics)', domain:'d4', def:'Most effective when deployed on ALL endpoint devices, not just perimeter firewalls or privileged accounts.' },
+  { term:'SPF', domain:'d4', def:"Lists which mail servers are authorized to send on a domain's behalf.", confused:'DKIM — uses a cryptographic signature to verify sender authenticity. DMARC — the policy layer that decides what happens when SPF/DKIM checks fail.' },
+  { term:'Code signing', domain:'d4', def:'Lets a system cryptographically verify a software update is authentic and untampered.' },
+  { term:'Sanitization', domain:'d4', def:"Thoroughly removes/modifies data so it's unrecoverable — standard for decommissioning." },
+  { term:'Chain of custody', domain:'d4', def:'Documenting every person who has handled a piece of evidence.' },
+  { term:'Vulnerability scanner', domain:'d4', def:'Detects and assesses security weaknesses.', confused:'Does NOT run continuously, monitor user behavior, or mitigate issues itself.' },
+  { term:'RBAC', domain:'d4', def:"Access determined by predefined job-function roles; users can't override.", confused:'ABAC (Attribute-based) — uses dynamic attributes like location/time instead of static roles.' },
+
+  // Domain 5 — The Auditor-General
+  { term:'Due diligence', domain:'d5', def:'Comprehensive vendor appraisal covering financial stability, reputation, and track record.' },
+  { term:'SOW (Statement of Work)', domain:'d5', def:'Details specific services, timelines, and costs for an engagement.', confused:'SLA — defines expected service level metrics. MSA — general terms governing multiple future engagements. MOA — broader collaboration understanding.' },
+  { term:'Continuous assessment', domain:'d5', def:'Ongoing, real-time risk evaluation.', confused:'Periodic review — scheduled, not real-time.' },
+  { term:'Governance Board', domain:'d5', def:'Holds ultimate strategic/policy decision authority.', confused:"Committees — provide specialized expert analysis but don't hold final authority." },
+  { term:'Playbooks', domain:'d5', def:'Actively enforce and verify configuration baselines (e.g. via Ansible), catching drift automatically.' },
+  { term:'Risk strategies (Mitigate / Avoid / Transfer / Accept)', domain:'d5', def:'The 4 risk strategies: reduce impact, eliminate the activity entirely, shift the burden to a third party (e.g. insurance), or acknowledge with no action.' },
+  { term:'ALE (Annual Loss Expectancy)', domain:'d5', def:'ALE = SLE × ARO.' },
+  { term:'Risk tolerance', domain:'d5', def:"An org's predetermined acceptable risk exposure threshold." },
+];
+
+let activeDomain = 'all';
+
+function renderDomainFilters(){
+  const container = document.getElementById('domainFilters');
+  const allBtn = `<button class="domain-filter-btn ${activeDomain==='all'?'active':''}" id="filter-all" onclick="setDomainFilter('all')" style="${activeDomain==='all' ? 'background:var(--gold); border-color:var(--gold);' : ''}">All</button>`;
+  const bossBtns = BOSSES.map(b => {
+    const active = activeDomain === b.id;
+    return `<button class="domain-filter-btn ${active?'active':''}" onclick="setDomainFilter('${b.id}')" style="${active ? `background:${b.color}; border-color:${b.color};` : `border-color:${b.color}; color:${b.color};`}">${escapeHtml(b.name)}</button>`;
+  }).join('');
+  container.innerHTML = allBtn + bossBtns;
+}
+
+function setDomainFilter(domain){
+  activeDomain = domain;
+  renderDomainFilters();
+  renderGlossary();
+}
+
+function renderGlossary(){
+  const query = document.getElementById('searchBox').value.trim().toLowerCase();
+  const filtered = GLOSSARY.filter(e =>
+    (activeDomain === 'all' || e.domain === activeDomain) &&
+    e.term.toLowerCase().includes(query)
+  );
+
+  document.getElementById('resultCount').textContent = `showing ${filtered.length} of ${GLOSSARY.length} terms`;
+
+  const list = document.getElementById('glossaryList');
+  if(filtered.length === 0){
+    list.innerHTML = '<div class="no-results">no terms match</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(e => {
+    const boss = BOSSES.find(b => b.id === e.domain);
+    return `
+      <div class="glossary-card" style="border-left-color:${boss.color}">
+        <div class="glossary-head">
+          <span class="glossary-term">${escapeHtml(e.term)}</span>
+          <span class="glossary-domain-tag" style="background:${boss.color}22; color:${boss.color}">${escapeHtml(boss.name)}</span>
+        </div>
+        <div class="glossary-def">${escapeHtml(e.def)}</div>
+        ${e.confused ? `<div class="glossary-confused"><b>Commonly confused with:</b> ${escapeHtml(e.confused)}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+renderDomainFilters();
+renderGlossary();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

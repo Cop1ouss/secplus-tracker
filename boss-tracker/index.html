@@ -22,6 +22,16 @@
   .countdown-date{font-family:var(--mono); font-size:8.5px; color:var(--text-dim); margin-top:2px; opacity:.7;}
 
   .section-lbl{font-family:var(--pixel); font-size:9.5px; color:var(--text-dim); letter-spacing:.5px; margin:20px 0 10px;}
+
+  .rewatch-card{background:var(--panel); border:2px solid var(--hp-red); border-radius:12px; padding:14px 16px; margin-bottom:20px;}
+  .rewatch-label{font-family:var(--pixel); font-size:9.5px; color:var(--hp-red); letter-spacing:.5px; margin-bottom:10px;}
+  .rewatch-list{display:flex; flex-direction:column; gap:8px;}
+  .rewatch-item{
+    background:var(--panel-raised); border:1px solid var(--line); border-radius:8px; padding:9px 12px;
+    font-family:var(--sans); font-size:12px; line-height:1.5;
+  }
+  .rewatch-item b{color:var(--text);}
+  .rewatch-note{font-family:var(--mono); font-size:9.5px; color:var(--text-dim);}
 </style>
 </head>
 <body>
@@ -30,6 +40,15 @@
   <div class="subtitle">Your Security+ SY0-701 command center.</div>
 
   <div class="countdown-row" id="countdownRow"></div>
+
+  <div class="rewatch-card">
+    <div class="rewatch-label">🎯 PRIORITY REWATCH</div>
+    <div class="rewatch-list">
+      <div class="rewatch-item"><b>#164 Access Control Models</b> (9 min) <span class="rewatch-note">— RBAC specifics</span></div>
+      <div class="rewatch-item"><b>#208 Vulnerability Management</b> (3 min) + <b>#209 Identifying Vulnerabilities</b> (6 min) <span class="rewatch-note">— vulnerability scanner behavior</span></div>
+      <div class="rewatch-item"><b>#118 Penetration Testing</b> (6 min) <span class="rewatch-note">— pen testing scope</span></div>
+    </div>
+  </div>
 
   <div class="section-lbl">MISSIONS</div>
   <div class="card-grid">
@@ -57,6 +76,11 @@
       <span class="hub-card-icon">⚠️</span>
       <div class="hub-card-title">Trap Gauntlet</div>
       <div class="hub-card-desc">Quick pre-exam refresher on the 5 common trap categories.</div>
+    </a>
+    <a class="hub-card" data-accent="boss:d1" href="glossary.html">
+      <span class="hub-card-icon">📖</span>
+      <div class="hub-card-title">Glossary</div>
+      <div class="hub-card-desc">Searchable terminology reference across all 5 domains.</div>
     </a>
   </div>
 </div>
