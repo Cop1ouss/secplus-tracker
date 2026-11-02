@@ -1,8 +1,22 @@
-# Security+ Tracker — SY0-701 · 42-Day Sprint
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+  <img alt="secplus-tracker banner" src="assets/banner-light.svg" width="100%">
+</picture>
 
-![category](https://img.shields.io/badge/category-Networking%20%26%20Certs-0ea5e9)
-![exam](https://img.shields.io/badge/exam-SY0--701-38bdf8)
-![status](https://img.shields.io/badge/status-in--progress-fbbf24)
+<p align="center">
+  <a href="https://cop1ouss.github.io/secplus-tracker/"><img alt="Open the tracker" src="https://img.shields.io/badge/%E2%96%B6%20open%20the%20tracker-live%20on%20GitHub%20Pages-f38ba8?style=for-the-badge&labelColor=1e1e2e"></a>
+</p>
+<p align="center">
+  <img alt="exam: SY0-701" src="https://img.shields.io/badge/exam-SY0--701-f38ba8?style=flat-square&labelColor=1e1e2e">
+  <img alt="format: 42-day sprint" src="https://img.shields.io/badge/format-42-day%20sprint-f38ba8?style=flat-square&labelColor=1e1e2e">
+  <img alt="offline: installable PWA" src="https://img.shields.io/badge/offline-installable%20PWA-a6e3a1?style=flat-square&labelColor=1e1e2e">
+  <img alt="build: none" src="https://img.shields.io/badge/build-none-a6e3a1?style=flat-square&labelColor=1e1e2e">
+</p>
+
+<p align="center">
+  <a href="https://cop1ouss.github.io/secplus-tracker/"><img alt="secplus-tracker on desktop" src="assets/screenshot-desktop.png" width="72%"></a>
+  <a href="https://cop1ouss.github.io/secplus-tracker/"><img alt="secplus-tracker on a phone" src="assets/screenshot-phone.png" width="22%"></a>
+</p>
 
 A gamified, self-contained study tracker for the **CompTIA Security+
 (SY0-701)** exam, built as a 42-day sprint plan. No build step, no
@@ -42,3 +56,7 @@ client-side (browser storage) — nothing here is sent to a server.
 
 - [`ccna-tracker`](https://github.com/Cop1ouss/ccna-tracker) — CCNA 200-301 study/test-prep repo, same gamified approach.
 - [`cisco-track`](https://github.com/Cop1ouss/cisco-track) — broader networking/AD curriculum tracker (CCNA + AZ-800 + Cisco JCA).
+
+---
+
+<p align="center"><sub>Built by <a href="https://github.com/Cop1ouss">Dajoni Gomez</a> · part of the <a href="https://cop1ouss.github.io/Cop1ouss/">Uncook</a> journey log</sub></p>
