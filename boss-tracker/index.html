@@ -52,6 +52,11 @@
 
   <div class="section-lbl">MISSIONS</div>
   <div class="card-grid">
+    <a class="hub-card" data-accent="boss:d4" href="../index.html">
+      <span class="hub-card-icon">🎯</span>
+      <div class="hub-card-title">Objective Tracker</div>
+      <div class="hub-card-desc">All 28 SY0-701 objectives, self-paced. Readiness score and practice exam log.</div>
+    </a>
     <a class="hub-card" data-accent="gold" href="game.html">
       <span class="hub-card-icon">⚔️</span>
       <div class="hub-card-title">Battle Arena</div>
@@ -109,11 +114,22 @@ function countdownTile(days, label, dateLabel){
 }
 
 function renderCountdowns(){
-  const examDays = daysUntil(2026, 6, 30);
-  const jobDays = daysUntil(2026, 6, 20);
-  document.getElementById('countdownRow').innerHTML =
-    countdownTile(examDays, 'SY0-701 EXAM', 'Jul 30, 2026') +
-    countdownTile(jobDays, 'LEHMAN START', 'Jul 20, 2026');
+  /* Self-paced: the exam date is optional and comes from the main tracker's settings. */
+  let examDate = '';
+  try { examDate = (JSON.parse(localStorage.getItem('secplus_selfpaced_v1') || '{}').examDate) || ''; } catch(e) {}
+  const row = document.getElementById('countdownRow');
+  if(examDate){
+    const [y, m, d] = examDate.split('-').map(Number);
+    const label = new Date(y, m - 1, d).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    row.innerHTML = countdownTile(daysUntil(y, m - 1, d), 'SY0-701 EXAM', label);
+  } else {
+    row.innerHTML = `
+    <div class="countdown-box">
+      <div class="countdown-num">\u221e</div>
+      <div class="countdown-lbl">self-paced</div>
+      <div class="countdown-date">set an exam date in the main tracker</div>
+    </div>`;
+  }
 }
 
 /* Card accents pull from shared/config.js so they can never drift from the
