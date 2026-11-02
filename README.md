@@ -7,6 +7,9 @@
   <a href="https://cop1ouss.github.io/secplus-tracker/"><img alt="Open the tracker" src="https://img.shields.io/badge/%E2%96%B6%20open%20the%20tracker-live%20on%20GitHub%20Pages-f38ba8?style=for-the-badge&labelColor=1e1e2e"></a>
 </p>
 <p align="center">
+  <a href="https://github.com/Cop1ouss/secplus-tracker/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Cop1ouss/secplus-tracker/ci.yml?style=flat-square&label=CI&labelColor=1e1e2e&color=a6e3a1"></a>
+  <a href="https://github.com/Cop1ouss/secplus-tracker/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://img.shields.io/github/actions/workflow/status/Cop1ouss/secplus-tracker/codeql.yml?style=flat-square&label=CodeQL&labelColor=1e1e2e&color=89b4fa"></a>
+  <a href="SECURITY.md"><img alt="Security policy" src="https://img.shields.io/badge/security-policy-f38ba8?style=flat-square&labelColor=1e1e2e"></a>
   <img alt="exam: SY0-701" src="https://img.shields.io/badge/exam-SY0--701-f38ba8?style=flat-square&labelColor=1e1e2e">
   <img alt="format: self-paced" src="https://img.shields.io/badge/format-self--paced%20%C2%B7%20no%20deadline-f38ba8?style=flat-square&labelColor=1e1e2e">
   <img alt="offline: installable PWA" src="https://img.shields.io/badge/offline-installable%20PWA-a6e3a1?style=flat-square&labelColor=1e1e2e">
@@ -78,6 +81,16 @@ client-side (browser storage) — nothing here is sent to a server.
 
 - [`ccna-tracker`](https://github.com/Cop1ouss/ccna-tracker) — CCNA 200-301 study/test-prep repo, same gamified approach.
 - [`cisco-track`](https://github.com/Cop1ouss/cisco-track) — broader networking/AD curriculum tracker (CCNA + AZ-800 + Cisco JCA).
+
+
+## Project docs
+
+| | |
+| --- | --- |
+| 📋 [PRD](docs/PRD.md) | The problem, the goal, scope and the finish line |
+| 🛡️ [Security policy](SECURITY.md) | How to report a vulnerability privately |
+| ⚖️ [License](LICENSE) | MIT |
+| 🧪 [CI](.github/workflows/ci.yml) | What runs on every pull request |
 
 ---
 
